@@ -152,6 +152,12 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
 		gl.glMaterialfv(GL2.GL_BACK, GL2.GL_AMBIENT_AND_DIFFUSE, matAmbAndDif2, 0);
 		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SPECULAR, matSpec, 0);
 		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SHININESS, matShine, 0);
+		
+    	// Enable color material mode:
+    	// The ambient and diffuse color of the front faces will track the color set by glColor().
+    	gl.glEnable(GL2.GL_COLOR_MATERIAL); 
+    	gl.glColorMaterial(GL2.GL_FRONT, GL2.GL_AMBIENT_AND_DIFFUSE);
+    
 
 	}
 	 
@@ -185,8 +191,14 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
 
 		double w = this.myTerrain.size().getWidth();
 		double h = this.myTerrain.size().getHeight();
-		System.out.println(w / 5 + " " + h / 5);
-		gl.glOrtho(-5, 5, -5, 5, 1, 100);
+		
+
+        GLU glu = new GLU();
+        
+        glu.gluPerspective(60.0, (float)w/(float)h, 1.0, 20.0);        
+        
+        gl.glMatrixMode(GL2.GL_MODELVIEW);
+        
 	}
 
 	private void draw(GL2 gl) {
