@@ -124,12 +124,44 @@ public class Terrain {
 	 */
 	public double altitude(double x, double z) {
 		double altitude = 0;
-		int w = (int) x;
-		int d = (int) z;
+		int x1 = (int) x;
+		int z1 = (int) z;
+		// vertex {x1, this.myAltitued[x1][z1],z1}
+		// vertex {x1, this.myAltitued[x1][z1+1],z1+1}
+		// vertex {x1+1, this.myAltitued[x1+1][z1],z1}
+		
+//		System.out.println("x1a " + x1 + " x " + x + " x2 " + (x1+1) + " y1 "+this.myAltitude[x1][z1] + " y2 " + this.myAltitude[x1+1][z1]);
+		double ya = interpolate(x1,x,x1+1,this.myAltitude[x1][z1],this.myAltitude[x1+1][z1]);
+		System.out.println("x "+ x+ " ya "+ya+" z1 "+z1);
+		// new vertex {x, ya,z1}
+//		System.out.println("x1b " + x1 + " x " + x + " x2 " + (x1+1) + " y1 "+this.myAltitude[x1][z1+1] + " y2 " + this.myAltitude[x1+1][z1+1]);
+		double yb = interpolate(x1,x,x1+1,this.myAltitude[x1][z1],this.myAltitude[x1][z1+1]);
+		System.out.println("x1 "+ x+ " yb "+yb+" z1 "+ z1);
+		// new vertex {x, ya,,
+//		System.out.println("z1a " + z1 + " z " + z + " z2 " + (z1+1) + " y1 "+this.myAltitude[x1][z1] + " y2 " + this.myAltitude[x1][z1+1]);
+		double yc = interpolate(z1,z,z1+1,this.myAltitude[x1][z1],this.myAltitude[x1][z1+1]);
+		System.out.println("z "+ z + " yc "+yc+" x1 " + x1);
+		
+		
+		
+		
 
-		System.out.println("(" + x + ", " + myAltitude[w][d] + ", " + z + ")");
-
-		return myAltitude[w][d];
+////		System.out.println("z1a " + z1 + " z " + z + " z2 " + (z1+1) + " y1 "+this.myAltitude[x1][z1] + " y2 " + this.myAltitude[x1][z1+1]);
+//		double yc = interpolate(z1,z,z1+1,this.myAltitude[x1][z1],this.myAltitude[x1][z1+1]);
+//		System.out.println("z "+ z + " yc "+yc+" x1 " + x1);
+//		
+////		System.out.println("z1d " + z1 + " z " + z + " z2 " + (z1+1) + " y1 "+this.myAltitude[x1+1][z1] + " y2 " + this.myAltitude[x1+1][z1+1]);
+//		double yd = interpolate(x1,x,x1+1,this.myAltitude[x1+1][z1],this.myAltitude[x1+1][z1+1]);
+//		System.out.println("z "+ z + " yd "+yd+" x2 " + (x1+1));
+		
+//		double [] vertex_xz = {x1, this.myAltitude[x1][z1],z1};
+//		double [] vertex_x2 = {x1+1, this.myAltitude[x1+1][z1],z1};
+//		double [] vertex_z2 = {x1, this.myAltitude[x1][z1+1],z1+1};
+		
+		return altitude;
+	}
+	private double interpolate(double x1,double x, double x2, double y1, double y2){
+		return (x-x1)/(x2-x1)*y2+(x2-x)/(x2-x1)*y1;
 	}
 
 	/**
@@ -194,97 +226,6 @@ public class Terrain {
 
 		return verties;
 	}
-	// public void vertex_mesh(GL2 gl) {
-	// gl.glBegin(GL2.GL_TRIANGLES);
-	// {
-	//
-	// gl.glColor4f(1, 1, 1, 1);
-	// System.out.println('a' + " x " + 0 + " y " + 0+ " z " + 0);
-	// System.out.println('b' + " x " + 0 + " y " + 0+ " z " + 1);
-	// System.out.println('c' + " x " + 1 + " y " +0+ " z " + 1);
-	// gl.glVertex3d(0, 0, 0);
-	// gl.glVertex3d(0, 0, 1);
-	// gl.glVertex3d(1, 1, 1);
-	// System.out.println("-------------------------------");
-	// System.out.println('c' + " x " + 1 + " y " + 1 + " z " + 1);
-	// System.out.println('d' + " x " + 1 + " y " + 0 + " z " + 0);
-	// System.out.println('a' + " x " + 0 + " y " + 0 + " z " + 0);
-	// gl.glVertex3d(1, 1, 1);
-	// gl.glVertex3d(1, 0, 0);
-	// gl.glVertex3d(0, 0, 0);
-	// System.out.println("-------------------------------");
-	//
-	// System.out.println('d' + " x " + 1 + " y " + 0 + " z " + 0);
-	// System.out.println('c' + " x " + 1 + " y " + 1 + " z " + 1);
-	// System.out.println('e' + " x " + 2 + " y " + 0 + " z " + 1);
-	// gl.glVertex3d(1, 0, 0);
-	// gl.glVertex3d(1, 1, 1);
-	// gl.glVertex3d(2, 0, 1);
-	// System.out.println("-------------------------------");
-	// System.out.println('e' + " x " + 2 + " y " + 0 + " z " + 1);
-	// System.out.println('f' + " x " + 2 + " y " + 0 + " z " + 0);
-	// System.out.println('d' + " x " + 1 + " y " + 0 + " z " + 0);
-	// gl.glVertex3d(2, 0, 1);
-	// gl.glVertex3d(2, 0, 0);
-	// gl.glVertex3d(1, 0, 0);
-	// System.out.println("-------------------------------");
-	//
-	//
-	// System.out.println('b' + " x " + 0 + " y " + 0 + " z " + 1);
-	// System.out.println('h' + " x " + 0 + " y " + 0 + " z " + 2);
-	// System.out.println('g' + " x " + 1 + " y " + 0 + " z " + 2);
-	// gl.glVertex3d(0, 0, 1);
-	// gl.glVertex3d(0, 0, 2);
-	// gl.glVertex3d(1, 0, 2);
-	// System.out.println("-------------------------------");
-	//
-	// System.out.println('g' + " x " + 1 + " y " + 0 + " z " + 2);
-	// System.out.println('c' + " x " + 1 + " y " + 1 + " z " + 1);
-	// System.out.println('b' + " x " + 0 + " y " + 0 + " z " + 1);
-	// gl.glVertex3d(1, 0, 2);
-	// gl.glVertex3d(1, 1, 1);
-	// gl.glVertex3d(0, 0, 1);
-	// System.out.println("-------------------------------");
-	//
-	//
-	//
-	// System.out.println('c' + " x " + 1 + " y " + 1 + " z " + 1);
-	// System.out.println('g' + " x " + 1 + " y " + 0 + " z " + 2);
-	// System.out.println('i' + " x " + 2 + " y " + 0 + " z " + 2);
-	//
-	// gl.glVertex3d(1, 1, 1);
-	// gl.glVertex3d(1, 0, 2);
-	// gl.glVertex3d(2, 0, 2);
-	//
-	// System.out.println("-------------------------------");
-	//
-	// System.out.println('i' + " x " + 2 + " y " + 0 + " z " + 2);
-	// System.out.println('e' + " x " + 2 + " y " + 0 + " z " + 1);
-	// System.out.println('c' + " x " + 1 + " y " + 1 + " z " + 1);
-	//
-	// gl.glVertex3d(2, 0, 2);
-	// gl.glVertex3d(2, 0, 1);
-	// gl.glVertex3d(1, 1, 1);
-	//
-	// }
-	// gl.glEnd();
-	//
-	// System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>");
-	// }
 
-	public double[] normal_mesh() {
-		int k = 0;
-		int w = this.mySize.width;
-		int d = this.mySize.height;
-		double[] mesh = new double[w * d * 3];
-		for (int i = 0; i < w; i++) {
-			for (int j = 0; j < d; j++) {
-				System.out.println("x: " + i + "y: " + this.myAltitude[i][j] + "z: " + j);
-				mesh[k++] = j;
-				mesh[k++] = this.myAltitude[j][i];
-				mesh[k++] = i;
-			}
-		}
-		return mesh;
-	}
+
 }
