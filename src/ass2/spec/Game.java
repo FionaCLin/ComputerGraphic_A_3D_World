@@ -1,7 +1,10 @@
 package ass2.spec;
 
+import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import com.jogamp.opengl.*;
@@ -16,12 +19,21 @@ import com.jogamp.opengl.util.FPSAnimator;
  *
  * @author malcolmr
  */
-public class Game extends JFrame implements GLEventListener, KeyListener {
+public class Game extends JFrame implements GLEventListener, MouseMotionListener, KeyListener {
 
 	private Terrain myTerrain;
 
 	private static int angle = 0;
-
+/**
+ * might need to comment the thing below
+ * @param terrain
+ */
+	private double rotateX = 0;
+    private double rotateY = 0;
+    private Point myMousePoint = null;
+    private static final int ROTATION_SCALE = 1;
+    private boolean showSides = true;
+    
 	public Game(Terrain terrain) {
 		super("Assignment 2");
 		myTerrain = terrain;
@@ -83,7 +95,6 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
 
 		 GLU glu = new GLU();
 	     glu.gluLookAt (0.0, 4.0, 6.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-	      
 		// rotate around x axis
 //		 gl.glRotated ( angle, 1,0, 0);
 
@@ -208,12 +219,15 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
 		{
 			for(int i = 0; i < verties.length; i++){
 				for(int j = 0; j < verties[i].length; j++){
-					double[] vertex = verties[i][j];
-					gl.glVertex3d(vertex[0], vertex[1],vertex[2]);
+					if (j != 3) {
+						double[] vertex = verties[i][j];
+						gl.glVertex3dv(vertex,0);
+					} else {
+						double[] normal = verties[i][j];
+						gl.glNormal3dv(normal,0);
+					}
 				}
 			}
-			
-
 		}
 		gl.glEnd();
 
@@ -248,6 +262,35 @@ public class Game extends JFrame implements GLEventListener, KeyListener {
 	@Override
 	public void keyReleased(KeyEvent e) {
 		// TODO Auto-generated method stub
+		switch (e.getKeyCode()) {
+		case KeyEvent.VK_S:			
+			showSides = !showSides;
+			break;
+		}
+	}
 
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		// TODO Auto-generated method stub
+		Point p = e.getPoint();
+
+        if (myMousePoint != null) {
+            int dx = p.x - myMousePoint.x;
+            int dy = p.y - myMousePoint.y;
+
+            // Note: dragging in the x dir rotates about y
+            //       dragging in the y dir rotates about x
+            rotateY += dx * ROTATION_SCALE;
+            rotateX += dy * ROTATION_SCALE;
+
+        }
+        
+        myMousePoint = p;
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent e) {
+		// TODO Auto-generated method stub
+		myMousePoint = e.getPoint();	
 	}
 }

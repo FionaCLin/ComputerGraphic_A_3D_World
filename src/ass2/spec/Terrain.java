@@ -172,24 +172,95 @@ public class Terrain {
 		int i = 0;
 		int w = this.mySize.width;
 		int d = this.mySize.height;
-		double[][][] verties = new double[(w - 1) * (d - 1) * 2][3][3];
+
+		double[][][] verties = new double[(w-1) * (d-1)* 2][4][4];
 		for (int x = 0; x < w - 1; x++) {
 			for (int z = 0; z < d - 1; z++) {
-				double[] vertexa = { x, this.myAltitude[x][z], z };
-				verties[i][0] = vertexa;
-				double[] vertexb = { x, this.myAltitude[x][z + 1], z + 1 };
-				verties[i][1] = vertexb;
-				double[] vertexc = { x + 1, this.myAltitude[x + 1][z + 1], z + 1 };
-				verties[i++][2] = vertexc;
-
-				double[] vertexd = { x + 1, this.myAltitude[x + 1][z], z };
-				verties[i][0] = vertexc;
-				verties[i][1] = vertexd;
-				verties[i++][2] = vertexa;
+//					(0,0,0)	 
+//						+
+//						|\   
+//					 |	| \  
+//					 V	|  \ 
+//						+---+					
+//					(0,0,1)->
+				double [] vertexa = {x, this.myAltitude[x][z], z, 1};
+				verties[i][0] = vertexa;   
+				double [] vertexb = {x, this.myAltitude[x][z + 1], z + 1, 1};
+				verties[i][1] =vertexb;
+				double [] vertexc = {x + 1, this.myAltitude[x + 1][z + 1], z + 1, 1};
+				verties[i][2] =vertexc;
+				double [] normal1 = normal(vertexa, vertexb, vertexc);
+				verties[i++][3] =normal1;
+				
+//					(0,0,0) <- (1,0.5,0)
+//						+---+
+//						 \  | ^
+//					  	  \ | |
+//					  	   \|
+//						    +					
+//						(1,0.3,1)
+				double [] vertexd = {x + 1, this.myAltitude[x + 1][z], z, 1};
+				verties[i][0] =vertexc;
+				verties[i][1] =vertexd;
+				verties[i][2] =vertexa;
+				double [] normal2 = normal(vertexc, vertexd, vertexa);
+				verties[i++][3] =normal2;
+				
 			}
 		}
 
 		return verties;
 	}
+	 
+    /* 
+     * Some maths utility functions
+     * 
+     */
+    
+    double [] cross(double u [], double v[]){
+    	double crossProduct[] = new double[3];
+    	crossProduct[0] = u[1]*v[2] - u[2]*v[1];
+    	crossProduct[1] = u[2]*v[0] - u[0]*v[2];
+    	crossProduct[2] = u[0]*v[1] - u[1]*v[0];
+    
+    	return crossProduct;
+    }
+    
+    //Find normal for planar polygon
+    public double[] normal(double[] p0, double p1[], double p2[]){
+    	double [] u = {p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]};
+    	double [] v = {p2[0] - p0[0], p2[1] - p0[1], p2[2] - p0[2]};
+    	double [] normal = cross(u,v);
+    	return normalise(normal);
+    }
+    
+   
+    double [] normalise(double [] n){
+    	double  mag = getMagnitude(n);
+    	double norm[] = {n[0]/mag,n[1]/mag,n[2]/mag};
+    	return norm;
+    }
+    
+    double getMagnitude(double [] n){
+    	double mag = n[0]*n[0] + n[1]*n[1] + n[2]*n[2];
+    	mag = Math.sqrt(mag);
+    	return mag;
+    }
+    
+    public static double[] multiply(double[][] m, double[] v) {
+      
+        double[] u = new double[4];
 
+<<<<<<< HEAD
+=======
+        for (int i = 0; i < 4; i++) {
+            u[i] = 0;
+            for (int j = 0; j < 4; j++) {
+                u[i] += m[i][j] * v[j];
+            }
+        }
+
+        return u;
+    }
+>>>>>>> Camera
 }
