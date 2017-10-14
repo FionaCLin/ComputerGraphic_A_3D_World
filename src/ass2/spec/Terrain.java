@@ -126,37 +126,23 @@ public class Terrain {
 		double altitude = 0;
 		int x1 = (int) x;
 		int z1 = (int) z;
-		// vertex {x1, this.myAltitued[x1][z1],z1}
-		// vertex {x1, this.myAltitued[x1][z1+1],z1+1}
-		// vertex {x1+1, this.myAltitued[x1+1][z1],z1}
-		
-//		System.out.println("x1a " + x1 + " x " + x + " x2 " + (x1+1) + " y1 "+this.myAltitude[x1][z1] + " y2 " + this.myAltitude[x1+1][z1]);
-		double ya = interpolate(x1,x,x1+1,this.myAltitude[x1][z1],this.myAltitude[x1+1][z1]);
-		System.out.println("x "+ x+ " ya "+ya+" z1 "+z1);
-		// new vertex {x, ya,z1}
-//		System.out.println("x1b " + x1 + " x " + x + " x2 " + (x1+1) + " y1 "+this.myAltitude[x1][z1+1] + " y2 " + this.myAltitude[x1+1][z1+1]);
-		double yb = interpolate(x1,x,x1+1,this.myAltitude[x1][z1],this.myAltitude[x1][z1+1]);
-		System.out.println("x1 "+ x+ " yb "+yb+" z1 "+ z1);
-		// new vertex {x, ya,,
-//		System.out.println("z1a " + z1 + " z " + z + " z2 " + (z1+1) + " y1 "+this.myAltitude[x1][z1] + " y2 " + this.myAltitude[x1][z1+1]);
-		double yc = interpolate(z1,z,z1+1,this.myAltitude[x1][z1],this.myAltitude[x1][z1+1]);
-		System.out.println("z "+ z + " yc "+yc+" x1 " + x1);
-		
-		
-		
-		
+//		// A==> vertex {x1, this.myAltitued[x1][z1],z1}
+//		// B==> vertex {x1, this.myAltitued[x1][z1+1],z1+1}
+//		System.out.println("x1 " + x1 + " z1 " + z1 + " z " + z + " z2 " + (z1+1) + " y1 "+this.myAltitude[x1][z1] + " y2 " + this.myAltitude[x1][z1+1]);
+		double ya = interpolate(z1, z, z1+1,this.myAltitude[x1][z1],this.myAltitude[x1][z1+1]);
+//		System.out.println("z1 "+ z1 + " ya " + ya + " z2 "+ (z1+1) + " x1 " + x1);
+//		// new vertex { x1, ya, z}
 
-////		System.out.println("z1a " + z1 + " z " + z + " z2 " + (z1+1) + " y1 "+this.myAltitude[x1][z1] + " y2 " + this.myAltitude[x1][z1+1]);
-//		double yc = interpolate(z1,z,z1+1,this.myAltitude[x1][z1],this.myAltitude[x1][z1+1]);
-//		System.out.println("z "+ z + " yc "+yc+" x1 " + x1);
-//		
-////		System.out.println("z1d " + z1 + " z " + z + " z2 " + (z1+1) + " y1 "+this.myAltitude[x1+1][z1] + " y2 " + this.myAltitude[x1+1][z1+1]);
-//		double yd = interpolate(x1,x,x1+1,this.myAltitude[x1+1][z1],this.myAltitude[x1+1][z1+1]);
-//		System.out.println("z "+ z + " yd "+yd+" x2 " + (x1+1));
+		// A==> vertex {x2, this.myAltitued[x2][z1],z1}
+		// C==> vertex {x2, this.myAltitued[x2][z1+1],z1+1}
+//		System.out.println("x2 " + (x1+1) +" z1 " + z1 + " z " + z + " z2 " + (x1+1) + " y3 "+this.myAltitude[x1+1][z1] + " y4 " + this.myAltitude[x1+1][z1+1]);
+		double yb = interpolate(z1,z,z1+1,this.myAltitude[x1+1][z1],this.myAltitude[x1+1][z1+1]);
+//		System.out.println("z1 "+ z1 + " yb " + yb + " z2 "+ (z1+1)+" x2 " + (x1 + 1));
+		// new vertex {x2, yb, z}
 		
-//		double [] vertex_xz = {x1, this.myAltitude[x1][z1],z1};
-//		double [] vertex_x2 = {x1+1, this.myAltitude[x1+1][z1],z1};
-//		double [] vertex_z2 = {x1, this.myAltitude[x1][z1+1],z1+1};
+//		System.out.println("z " + z + " x1 " + x1 + " x " + x + " x2 " + (x1 + 1) + " ya "+ ya + " yb " + yb);
+		altitude = interpolate(x1, x, x1+1, ya, yb);
+//		System.out.println("z "+ z + " y " + y + " x1 " + x1);
 		
 		return altitude;
 	}
