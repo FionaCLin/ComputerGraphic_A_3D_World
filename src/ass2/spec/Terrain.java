@@ -205,10 +205,8 @@ public class Terrain {
 				verties[i][2] =vertexa;
 				double [] normal2 = normal(vertexc, vertexd, vertexa);
 				verties[i++][3] =normal2;
-				
 			}
 		}
-
 		return verties;
 	}
 	 
@@ -251,8 +249,6 @@ public class Terrain {
       
         double[] u = new double[4];
 
-<<<<<<< HEAD
-=======
         for (int i = 0; i < 4; i++) {
             u[i] = 0;
             for (int j = 0; j < 4; j++) {
@@ -262,5 +258,4 @@ public class Terrain {
 
         return u;
     }
->>>>>>> Camera
 }
