@@ -13,6 +13,7 @@ import com.jogamp.opengl.glu.GLU;
 
 import javax.swing.JFrame;
 import com.jogamp.opengl.util.FPSAnimator;
+import com.jogamp.opengl.util.gl2.GLUT;
 
 /**
  * COMMENT: Comment Game
@@ -24,16 +25,22 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	private Terrain myTerrain;
 
 	private static int angle = 0;
-/**
- * might need to comment the thing below
- * @param terrain
- */
+	/**
+	 * might need to comment the thing below
+	 * 
+	 * @param terrain
+	 */
 	private double rotateX = 0;
-    private double rotateY = 0;
-    private Point myMousePoint = null;
-    private static final int ROTATION_SCALE = 1;
-    private boolean showSides = true;
-    
+	private double rotateY = 0;
+	private Point myMousePoint = null;
+	private static final int ROTATION_SCALE = 1;
+	private boolean showSides = true;
+
+	// the compass direction of the camera in degrees
+	private double angle1 = 0;
+	private double camerax = 5;
+	private double cameraz = 12;
+
 	public Game(Terrain terrain) {
 		super("Assignment 2");
 		myTerrain = terrain;
@@ -80,7 +87,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		Game game = new Game(terrain);
 		game.run();
 	}
-
+	
 	@Override
 	public void display(GLAutoDrawable drawable) {
 		GL2 gl = drawable.getGL().getGL2();
@@ -93,19 +100,50 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 		gl.glLoadIdentity();
 
-		 GLU glu = new GLU();
-	     glu.gluLookAt (0.0, 4.0, 6.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-		// rotate around x axis
-//		 gl.glRotated ( angle, 1,0, 0);
+		GLU glu = new GLU();
+		double[] eyes = { 5, 5, 12 };
+		double[] centre = { 5, 0.0, 5.0 };
 
-		gl.glRotated(angle, 0, 1, 0); // Y axis
-//		 gl.glRotated(angle, 0, 0, 1); // Z axis
-//		 gl.glRotated(angle, 1, 1, 0); // Axis (0,1,1)
+		eyes[0] = camerax;
+		eyes[1] = 3;  // Minimum height of camera.
+		eyes[2] = cameraz;
+		
+		// Find max height of nearby terrain points.
+		double radius = 2.;
+		double[][][] verties = this.myTerrain.vertex_mesh();
+			for (int i = 0; i < verties.length; i++) {
+				for (int j = 0; j < 3; j++) {
+						double[] vertex = verties[i][j];
+						if (Math.abs(camerax - vertex[0]) < radius &&
+						  Math.abs(cameraz - vertex[2]) < radius)
+							eyes[1] = Math.max(eyes[1], vertex[1] + 1.5);
+				}
+			}
+		System.out.println("height = " + eyes[1]);
+		
+		// Compass direction.
+		double[] dir = { 0, 0, 0 };
+		dir[0] = Math.sin(Math.toRadians(angle1));
+		dir[1] = -.5;
+		dir[2] = -Math.cos(Math.toRadians(angle1));
+
+		centre[0] = eyes[0] + dir[0];
+		centre[1] = eyes[1] + dir[1];
+		centre[2] = eyes[2] + dir[2];
+		glu.gluLookAt(eyes[0], eyes[1], eyes[2], centre[0], centre[1], centre[2], 0.0, 1.0, 0.0);
+		// rotate around x axis
+		// gl.glRotated ( angle, 1,0, 0);
+
+		// gl.glRotated(angle, 0, 1, 0); // Y axis
+		// gl.glRotated(angle, 0, 0, 1); // Z axis
+		// gl.glRotated(angle, 1, 1, 0); // Axis (0,1,1)
+		GLUT glut = new GLUT();
+		glut.glutSolidSphere(1.0, 40, 40);
 
 		gl.glColor3f(0, 0.5f, 0);
 		draw(gl);
 
-//		gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_FILL);
+		// gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_FILL);
 
 	}
 
@@ -163,37 +201,42 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		gl.glMaterialfv(GL2.GL_BACK, GL2.GL_AMBIENT_AND_DIFFUSE, matAmbAndDif2, 0);
 		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SPECULAR, matSpec, 0);
 		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SHININESS, matShine, 0);
-		
-    	// Enable color material mode:
-    	// The ambient and diffuse color of the front faces will track the color set by glColor().
-    	gl.glEnable(GL2.GL_COLOR_MATERIAL); 
-    	gl.glColorMaterial(GL2.GL_FRONT, GL2.GL_AMBIENT_AND_DIFFUSE);
-    
+
+		// Enable color material mode:
+		// The ambient and diffuse color of the front faces will track the color
+		// set by glColor().
+		gl.glEnable(GL2.GL_COLOR_MATERIAL);
+		gl.glColorMaterial(GL2.GL_FRONT, GL2.GL_AMBIENT_AND_DIFFUSE);
 
 	}
-	 
-    public void setUpLighting(GL2 gl) {    	
-    	// Light property vectors.
-    	float lightPos[] = { 0.0f, 1.5f, 3.0f, 1.0f };
-    	
-    	float lightAmb[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-    	float lightDifAndSpec[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    	float globAmb[] = { 0.2f, 0.2f, 0.2f, 1.0f };
-    	
-    	gl.glEnable(GL2.GL_LIGHT0); // Enable particular light source.
-    	
-    	// Set light properties.
-    	gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, lightAmb,0);
-    	gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, lightDifAndSpec,0);
-    	gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_SPECULAR, lightDifAndSpec,0);
-    	
-    	//This position gets multiplied by current transformation
-    
-    	gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, lightPos,0);    	   	
 
-    	gl.glLightModelfv(GL2.GL_LIGHT_MODEL_AMBIENT, globAmb,0); // Global ambient light.
-    	gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_TRUE); // Enable two-sided lighting.
-    }
+	public void setUpLighting(GL2 gl) {
+		// Light property vectors.
+		float lightPos[] = { 0.0f, 1.5f, 3.0f, 1.0f };
+
+		float lightAmb[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		float lightDifAndSpec[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		float globAmb[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+
+		gl.glEnable(GL2.GL_LIGHT0); // Enable particular light source.
+
+		// Set light properties.
+		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, lightAmb, 0);
+		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, lightDifAndSpec, 0);
+		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_SPECULAR, lightDifAndSpec, 0);
+
+		// This position gets multiplied by current transformation
+
+		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, lightPos, 0);
+
+		gl.glLightModelfv(GL2.GL_LIGHT_MODEL_AMBIENT, globAmb, 0); // Global
+																	// ambient
+																	// light.
+		gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_TRUE); // Enable
+																	// two-sided
+																	// lighting.
+	}
+
 	@Override
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
 		GL2 gl = drawable.getGL().getGL2();
@@ -202,14 +245,12 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 		double w = this.myTerrain.size().getWidth();
 		double h = this.myTerrain.size().getHeight();
-		
 
-        GLU glu = new GLU();
-        
-        glu.gluPerspective(60.0, (float)w/(float)h, 1.0, 20.0);        
-        
-        gl.glMatrixMode(GL2.GL_MODELVIEW);
-        
+		GLU glu = new GLU();
+		glu.gluPerspective(60.0, (float) w / (float) h, 1.0, 200.0);
+
+		gl.glMatrixMode(GL2.GL_MODELVIEW);
+
 	}
 
 	private void draw(GL2 gl) {
@@ -217,14 +258,14 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		double[][][] verties = this.myTerrain.vertex_mesh();
 		gl.glBegin(GL2.GL_TRIANGLES);
 		{
-			for(int i = 0; i < verties.length; i++){
-				for(int j = 0; j < verties[i].length; j++){
+			for (int i = 0; i < verties.length; i++) {
+				for (int j = 0; j < verties[i].length; j++) {
 					if (j != 3) {
 						double[] vertex = verties[i][j];
-						gl.glVertex3dv(vertex,0);
+						gl.glVertex3dv(vertex, 0);
 					} else {
 						double[] normal = verties[i][j];
-						gl.glNormal3dv(normal,0);
+						gl.glNormal3dv(normal, 0);
 					}
 				}
 			}
@@ -241,21 +282,32 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 	@Override
 	public void keyPressed(KeyEvent e) {
+		
+		double dirx = Math.sin(Math.toRadians(angle1));
+		double dirz = -Math.cos(Math.toRadians(angle1));
+		double step = .1;
+		
 		// TODO Auto-generated method stub
 		switch (e.getKeyCode()) {
 
 		case KeyEvent.VK_UP:
-
-			angle = (angle + 10) % 360;
+			camerax += dirx * step;
+			cameraz += dirz * step;
 			break;
 		case KeyEvent.VK_DOWN:
-
-			angle = (angle - 10) % 360;
+			camerax -= dirx * step;
+			cameraz -= dirz * step;
+			break;
+		case KeyEvent.VK_RIGHT:
+			angle1 = (angle1 + 10) % 360;
+			break;
+		case KeyEvent.VK_LEFT:
+			 angle1 = (angle1 - 10) % 360;
 			break;
 		default:
 			break;
 		}
-		System.out.println(angle);
+		System.out.println(angle1);
 
 	}
 
@@ -263,7 +315,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	public void keyReleased(KeyEvent e) {
 		// TODO Auto-generated method stub
 		switch (e.getKeyCode()) {
-		case KeyEvent.VK_S:			
+		case KeyEvent.VK_S:
 			showSides = !showSides;
 			break;
 		}
@@ -274,23 +326,23 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		// TODO Auto-generated method stub
 		Point p = e.getPoint();
 
-        if (myMousePoint != null) {
-            int dx = p.x - myMousePoint.x;
-            int dy = p.y - myMousePoint.y;
+		if (myMousePoint != null) {
+			int dx = p.x - myMousePoint.x;
+			int dy = p.y - myMousePoint.y;
 
-            // Note: dragging in the x dir rotates about y
-            //       dragging in the y dir rotates about x
-            rotateY += dx * ROTATION_SCALE;
-            rotateX += dy * ROTATION_SCALE;
+			// Note: dragging in the x dir rotates about y
+			// dragging in the y dir rotates about x
+			rotateY += dx * ROTATION_SCALE;
+			rotateX += dy * ROTATION_SCALE;
 
-        }
-        
-        myMousePoint = p;
+		}
+
+		myMousePoint = p;
 	}
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
 		// TODO Auto-generated method stub
-		myMousePoint = e.getPoint();	
+		myMousePoint = e.getPoint();
 	}
 }
