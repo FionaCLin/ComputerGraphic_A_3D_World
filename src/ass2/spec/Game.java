@@ -24,7 +24,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 	private Terrain myTerrain;
 	private Avatar person;
-	private Camera camera;
+	Tree myTree;
 
 	/**
 	 * might need to comment the thing below
@@ -38,6 +38,10 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	private boolean showSides = true;
 
 	private boolean isfollowing = false;
+	// the compass direction of the camera in degrees
+	private double angle = 0;
+	private double camerax = 5;
+	private double cameraz = 15;
 
 	// texture files
 	private String textureExt1 = "bmp";
@@ -46,10 +50,9 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	public Game(Terrain terrain) {
 		super("Assignment 2");
 		myTerrain = terrain;
-		camera = new Camera(myTerrain.size());
-		double camerax = camera.getCamerax();
-		double cameraz = camera.getCameraz();
 		person = new Avatar(camerax, myTerrain.altitude(camerax, cameraz - 6.5), cameraz - 6.5);
+
+		myTree = new Tree(camerax, myTerrain.altitude(camerax, cameraz - 3), cameraz - 3);
 
 	}
 
@@ -89,7 +92,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	 * @throws FileNotFoundException
 	 */
 	public static void main(String[] args) throws FileNotFoundException {
-		Terrain terrain = LevelIO.load(new File(args[0]));
+		Terrain terrain = LevelIO.load(new File("src/test0.json"));
 		Game game = new Game(terrain);
 		game.run();
 	}
@@ -105,15 +108,54 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 
 		gl.glLoadIdentity();
-		camera.setCamera(this.myTerrain.vertex_mesh());
 
+		GLU glu = new GLU();
+		double[] eyes = { 5, 5, 12 };
+		double[] centre = { 5, 0.0, 5.0 };
+
+		eyes[0] = camerax;
+		eyes[1] = 3; // Minimum height of camera.
+		eyes[2] = cameraz;
+
+		// Find max height of nearby terrain points.
+		double radius = 2.;
+		double[][][] verties = this.myTerrain.vertex_mesh();
+		for (int i = 0; i < verties.length; i++) {
+			for (int j = 0; j < 3; j++) {
+				double[] vertex = verties[i][j];
+				if (Math.abs(camerax - vertex[0]) < radius && Math.abs(cameraz - vertex[2]) < radius)
+					eyes[1] = Math.max(eyes[1], vertex[1] + 1.5);
+			}
+		}
+		//System.out.println("height = " + eyes[1]);
+
+		// Compass direction.
+		double[] dir = { 0, 0, 0 };
+		dir[0] = Math.sin(Math.toRadians(angle));
+		dir[1] = -.5;
+		dir[2] = -Math.cos(Math.toRadians(angle));
+
+		centre[0] = eyes[0] + dir[0];
+		centre[1] = eyes[1] + dir[1];
+		centre[2] = eyes[2] + dir[2];
+		glu.gluLookAt(eyes[0], eyes[1], eyes[2], centre[0], centre[1], centre[2], 0.0, 1.0, 0.0);
+		// rotate around x axis
+		// gl.glRotated ( angle, 1,0, 0);
+
+		// gl.glRotated(angle, 0, 1, 0); // Y axis
+		// gl.glRotated(angle, 0, 0, 1); // Z axis
+		// gl.glRotated(angle, 1, 1, 0); // Axis (0,1,1)
+
+		// person.drawAvatar(gl,glut);
 		gl.glColor3f(0, 0.5f, 0);
 		draw(gl);
 
 		GLUT glut = new GLUT();
-
-		glut.glutSolidSphere(1.0, 20, 20);
-		person.drawAvatar(gl, glut);
+		// gl.glTranslated(camerax,this.myTerrain.altitude(camerax/2,cameraz/2),
+		// cameraz);
+		// glut.glutSolidSphere(1.0, 20, 20);
+		//person.drawAvatar(gl, glut);
+		myTree.drawTree(gl,glut);
 
 		// gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_FILL);
 
@@ -255,63 +297,75 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	@Override
 	public void keyPressed(KeyEvent e) {
 
+		double dirx = Math.sin(Math.toRadians(angle));
+		double dirz = -Math.cos(Math.toRadians(angle));
+		double step = .1;
 		double[] pos = person.getMyPos();
 		// TODO Auto-generated method stub
 		switch (e.getKeyCode()) {
 		case KeyEvent.VK_W:
-			if (pos[2] > 1) {
-				pos[2] -= .5;
+			if (pos[0] <= myTerrain.size().getWidth() && pos[0] >= 0) {
+				if (isfollowing)
+					updateCamera();
+				pos[0] += .5;
 				pos[1] = myTerrain.altitude(pos[0], pos[2]);
 				person.setMyPos(pos);
 			}
 			break;
 		case KeyEvent.VK_S:
-			if (pos[2] < myTerrain.size().getWidth() - 1) {
-				pos[2] += .5;
-				pos[1] = myTerrain.altitude(pos[0], pos[2]);
-				person.setMyPos(pos);
-			}
-			break;
-		case KeyEvent.VK_A:
-			if (pos[0] > 1) {
+			if (pos[0] <= myTerrain.size().getWidth() && pos[0] >= 0) {
+				if (isfollowing)
+					updateCamera();
 				pos[0] -= .5;
 				pos[1] = myTerrain.altitude(pos[0], pos[2]);
 				person.setMyPos(pos);
 			}
 			break;
+		case KeyEvent.VK_A:
+			if (pos[2] <= myTerrain.size().getHeight() && pos[2] >= 0) {
+				if (isfollowing)
+					updateCamera();
+				pos[2] -= .5;
+				pos[1] = myTerrain.altitude(pos[0], pos[2]);
+				person.setMyPos(pos);
+			}
+			break;
 		case KeyEvent.VK_D:
-			if (pos[0] < myTerrain.size().getHeight() - 1) {
-				pos[0] += .5;
+			if (pos[2] <= myTerrain.size().getHeight() && pos[2] >= 0) {
+				if (isfollowing)
+					updateCamera();
+				pos[2] += .5;
 				pos[1] = myTerrain.altitude(pos[0], pos[2]);
 				person.setMyPos(pos);
 			}
 			break;
 
 		case KeyEvent.VK_SPACE:
-			isfollowing = (!isfollowing);
-			if (isfollowing)
-				camera.setPerson(person);
-			else
-				camera.setPerson(null);
+			isfollowing = (!isfollowing); 
 			break;
 		case KeyEvent.VK_UP:
-			camera.up();
+			camerax += dirx * step;
+			cameraz += dirz * step;
 			break;
 		case KeyEvent.VK_DOWN:
-
-			camera.down();
+			camerax -= dirx * step;
+			cameraz -= dirz * step;
 			break;
 		case KeyEvent.VK_RIGHT:
-			camera.right();
-
+			angle = (angle + 10) % 360;
 			break;
 		case KeyEvent.VK_LEFT:
-			camera.left();
+			angle = (angle - 10) % 360;
 			break;
 		default:
 			break;
 		}
-		System.out.println(camera.getAngle());
+		System.out.println(angle);
+
+	}
+
+	private void updateCamera() {
+		// TODO Auto-generated method stub
 
 	}
 
