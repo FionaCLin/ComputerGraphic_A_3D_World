@@ -10,6 +10,7 @@ package ass2.spec;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.glu.GLUquadric;
+import com.jogamp.opengl.util.gl2.GLUT;
 
 
 public class Tree {
@@ -28,46 +29,21 @@ public class Tree {
     }
 
 
-    public void drawTree(GL2 gl) {
-        /*//Set Trunk Material Properties from week5 slide
-        float[] amb = {0.2f, 0.15f, 0.2f, 1.0f};
-        float[] diff = {0.2f, 0.1f, 0.0f, 1.0f};
-        float[] spe = {0.5f, 0.5f, 0.5f, 1.0f};
-        float phong = 50f;
-        GLU glu = new GLU();
+    public void drawTree(GL2 gl, GLUT glut) {
 
-        gl.glPushMatrix();
-        {   //draw trunk
-            gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_AMBIENT, amb, 0);
-            gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_DIFFUSE, diff, 0);
-            gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_SPECULAR, spe, 0);
-            gl.glMaterialf(GL2.GL_FRONT, GL2.GL_SHININESS, phong);
 
-            //make trunck using cylinder
-            //GLU glu = new GLU();
-            gl.glTranslated(myPos[0], myPos[1], myPos[2]);
-            gl.glRotated(-90.0, 1, 0, 0);
-            GLUquadric gluQuadratic = glu.gluNewQuadric();
-            glu.gluQuadricTexture(gluQuadratic, true);
-            glu.gluQuadricNormals(gluQuadratic, GLU.GLU_SMOOTH);
-            glu.gluCylinder(gluQuadratic, 0.07f, 0.07f, 0.7f, 60, 60);
-        }
-        gl.glPopMatrix();*/
-        drawCylinder(gl,15,40,false);
+        drawCylinder2(gl, glut);
+        drawSphere(gl,glut);
+
+
     }
 
 
     //copy form week 4 code
     public void drawCylinder(GL2 gl,int height, int slices,boolean cylinder) {
 
-        /*int height = 10;
-        int slices = 32;
-        boolean cylinder =true;*/
-
-
-        gl.glColor3f(1,0,0);
-        gl.glTranslated(myPos[0], myPos[1], myPos[2]);
-        gl.glRotated(0, 1, 0, 0);
+        gl.glColor3f(0,1,0);
+        gl.glRotated(Math.PI/2, 1, 0, 0);
 
 
         double z1 = 0;
@@ -154,6 +130,33 @@ public class Tree {
 
         gl.glPolygonMode(GL.GL_FRONT_AND_BACK,GL2.GL_FILL);
     }
+
+
+    public void drawCylinder2(GL2 gl, GLUT glut){
+        gl.glPushMatrix();
+        gl.glTranslated(myPos[0], myPos[1], myPos[2]);
+        gl.glRotated(-90,1,0,0);
+        gl.glColor3f(102f / 255, 51f / 255, 0);
+        //gl.glTranslated(0,0,-0.2);
+        glut.glutSolidCylinder(0.06, 2, 20, 20);
+        gl.glPopMatrix();
+    }
+
+
+
+    public void drawSphere(GL2 gl, GLUT glut){
+        gl.glPushMatrix();
+        gl.glTranslated(myPos[0], myPos[1], myPos[2]);
+        gl.glRotated(-90,1,0,0);
+        gl.glTranslated(0,0,2);
+        gl.glColor3f(147f/255,247f/255,138f/255);
+        glut.glutSolidSphere(0.6f, 10, 10);
+        gl.glPopMatrix();
+
+    }
+
+
+
 
 
 
