@@ -24,6 +24,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 	private Terrain myTerrain;
 	private Avatar person;
+	private Camera camera;
 
 	/**
 	 * might need to comment the thing below
@@ -37,10 +38,6 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	private boolean showSides = true;
 
 	private boolean isfollowing = false;
-	// the compass direction of the camera in degrees
-	private double angle = 0;
-	private double camerax = 5;
-	private double cameraz = 15;
 
 	// texture files
 	private String textureExt1 = "bmp";
@@ -49,6 +46,9 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	public Game(Terrain terrain) {
 		super("Assignment 2");
 		myTerrain = terrain;
+		camera = new Camera(myTerrain.size());
+		double camerax = camera.getCamerax();
+		double cameraz = camera.getCameraz();
 		person = new Avatar(camerax, myTerrain.altitude(camerax, cameraz - 6.5), cameraz - 6.5);
 
 	}
@@ -105,23 +105,14 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 
 		gl.glLoadIdentity();
-		if (!isfollowing)
-			setCamera();
-		// rotate around x axis
-		// gl.glRotated ( angle, 1,0, 0);
+		camera.setCamera(this.myTerrain.vertex_mesh());
 
-		// gl.glRotated(angle, 0, 1, 0); // Y axis
-		// gl.glRotated(angle, 0, 0, 1); // Z axis
-		// gl.glRotated(angle, 1, 1, 0); // Axis (0,1,1)
-
-		// person.drawAvatar(gl,glut);
 		gl.glColor3f(0, 0.5f, 0);
 		draw(gl);
 
 		GLUT glut = new GLUT();
-		// gl.glTranslated(camerax,this.myTerrain.altitude(camerax/2,cameraz/2),
-		// cameraz);
-		// glut.glutSolidSphere(1.0, 20, 20);
+
+		glut.glutSolidSphere(1.0, 20, 20);
 		person.drawAvatar(gl, glut);
 
 		// gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_FILL);
@@ -264,43 +255,32 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	@Override
 	public void keyPressed(KeyEvent e) {
 
-		double dirx = Math.sin(Math.toRadians(angle));
-		double dirz = -Math.cos(Math.toRadians(angle));
-		double step = .1;
 		double[] pos = person.getMyPos();
 		// TODO Auto-generated method stub
 		switch (e.getKeyCode()) {
 		case KeyEvent.VK_W:
-			if (pos[2] <= myTerrain.size().getWidth() && pos[2] >= 0) {
-				if (isfollowing)
-					updateCamera();
+			if (pos[2] > 1) {
 				pos[2] -= .5;
 				pos[1] = myTerrain.altitude(pos[0], pos[2]);
 				person.setMyPos(pos);
 			}
 			break;
 		case KeyEvent.VK_S:
-			if (pos[2] <= myTerrain.size().getWidth() && pos[2] >= 0) {
-				if (isfollowing)
-					updateCamera();
+			if (pos[2] < myTerrain.size().getWidth() - 1) {
 				pos[2] += .5;
 				pos[1] = myTerrain.altitude(pos[0], pos[2]);
 				person.setMyPos(pos);
 			}
 			break;
 		case KeyEvent.VK_A:
-			if (pos[0] <= myTerrain.size().getHeight() && pos[0] >= 0) {
-				if (isfollowing)
-					updateCamera();
+			if (pos[0] > 1) {
 				pos[0] -= .5;
 				pos[1] = myTerrain.altitude(pos[0], pos[2]);
 				person.setMyPos(pos);
 			}
 			break;
 		case KeyEvent.VK_D:
-			if (pos[0] <= myTerrain.size().getHeight() && pos[0] >= 0) {
-				if (isfollowing)
-					updateCamera();
+			if (pos[0] < myTerrain.size().getHeight() - 1) {
 				pos[0] += .5;
 				pos[1] = myTerrain.altitude(pos[0], pos[2]);
 				person.setMyPos(pos);
@@ -309,94 +289,30 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 		case KeyEvent.VK_SPACE:
 			isfollowing = (!isfollowing);
+			if (isfollowing)
+				camera.setPerson(person);
+			else
+				camera.setPerson(null);
 			break;
 		case KeyEvent.VK_UP:
-			camerax += dirx * step;
-			cameraz += dirz * step;
+			camera.up();
 			break;
 		case KeyEvent.VK_DOWN:
-			camerax -= dirx * step;
-			cameraz -= dirz * step;
+
+			camera.down();
 			break;
 		case KeyEvent.VK_RIGHT:
-			angle = (angle + 10) % 360;
+			camera.right();
+
 			break;
 		case KeyEvent.VK_LEFT:
-			angle = (angle - 10) % 360;
+			camera.left();
 			break;
 		default:
 			break;
 		}
-		System.out.println(angle);
+		System.out.println(camera.getAngle());
 
-	}
-
-	private void updateCamera() {
-		// TODO Auto-generated method stub
-//		GLU glu = new GLU();
-//		double[] eyes = { 5, 5, 12 };
-//		double[] centre = { 5, 0.0, 5.0 };
-//
-//		eyes[0] = camerax;
-//		eyes[1] = 3; // Minimum height of camera.
-//		eyes[2] = cameraz;
-//
-//		// Find max height of nearby terrain points.
-//		double radius = 2.;
-//		double[][][] verties = this.myTerrain.vertex_mesh();
-//		for (int i = 0; i < verties.length; i++) {
-//			for (int j = 0; j < 3; j++) {
-//				double[] vertex = verties[i][j];
-//				if (Math.abs(camerax - vertex[0]) < radius && Math.abs(cameraz - vertex[2]) < radius)
-//					eyes[1] = Math.max(eyes[1], vertex[1] + 1.5);
-//			}
-//		}
-////		System.out.println("height = " + eyes[1]);
-//
-//		// Compass direction.
-//		double[] dir = { 0, 0, 0 };
-//		dir[0] = Math.sin(Math.toRadians(angle));
-//		dir[1] = -.5;
-//		dir[2] = -Math.cos(Math.toRadians(angle));
-//
-//		centre[0] = eyes[0] + dir[0];
-//		centre[1] = eyes[1] + dir[1];
-//		centre[2] = eyes[2] + dir[2];
-//		glu.gluLookAt(eyes[0], eyes[1], eyes[2], centre[0], centre[1], centre[2], 0.0, 1.0, 0.0);
-
-	}
-
-	public void setCamera() {
-		GLU glu = new GLU();
-		double[] eyes = { 5, 5, 12 };
-		double[] centre = { 5, 0.0, 5.0 };
-
-		eyes[0] = camerax;
-		eyes[1] = 3; // Minimum height of camera.
-		eyes[2] = cameraz;
-
-		// Find max height of nearby terrain points.
-		double radius = 2.;
-		double[][][] verties = this.myTerrain.vertex_mesh();
-		for (int i = 0; i < verties.length; i++) {
-			for (int j = 0; j < 3; j++) {
-				double[] vertex = verties[i][j];
-				if (Math.abs(camerax - vertex[0]) < radius && Math.abs(cameraz - vertex[2]) < radius)
-					eyes[1] = Math.max(eyes[1], vertex[1] + 1.5);
-			}
-		}
-//		System.out.println("height = " + eyes[1]);
-
-		// Compass direction.
-		double[] dir = { 0, 0, 0 };
-		dir[0] = Math.sin(Math.toRadians(angle));
-		dir[1] = -.5;
-		dir[2] = -Math.cos(Math.toRadians(angle));
-
-		centre[0] = eyes[0] + dir[0];
-		centre[1] = eyes[1] + dir[1];
-		centre[2] = eyes[2] + dir[2];
-		glu.gluLookAt(eyes[0], eyes[1], eyes[2], centre[0], centre[1], centre[2], 0.0, 1.0, 0.0);
 	}
 
 	@Override
