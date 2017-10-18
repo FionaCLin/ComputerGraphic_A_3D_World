@@ -73,7 +73,7 @@ public class Camera {
 		double[] centre = { size.getHeight() / 2, 0.0, size.getWidth() / 2 };
 
 		eyes[0] = camerax;
-		eyes[1] = 3; // Minimum height of camera.
+		eyes[1] = 3; // Mi nimum height of camera.
 		eyes[2] = cameraz;
 
 		// Find max height of nearby terrain points.
@@ -90,21 +90,29 @@ public class Camera {
 
 		// Compass direction.
 		double[] dir = { 0, 0, 0 };
-		dir[0] = Math.sin(Math.toRadians(angle));
-		dir[1] = -.5;
-		dir[2] = -Math.cos(Math.toRadians(angle));
+
 		if (person == null) {
+			dir[0] = Math.sin(Math.toRadians(angle));
+			dir[1] = -.5;
+			dir[2] = -Math.cos(Math.toRadians(angle));
+
 			centre[0] = eyes[0] + dir[0];
 			centre[1] = eyes[1] + dir[1];
 			centre[2] = eyes[2] + dir[2];
-			System.out.println(centre[0] + "xxx");
+			System.out.println(eyes[0] + "xxx angle " + angle);
+			System.out.println(dir[0] + " x " + dir[1] + " y " + dir[2] + " z " + angle + " angle");
 		} else {
 			centre = person.getMyPos(); // look at person
+			dir[0] = Math.sin(Math.toRadians(angle));
+			dir[1] = -.5;
+			dir[2] = -Math.cos(Math.toRadians(angle));
 
-			eyes[0] = centre[0] + this.dstFromPerson;
+			// eyes = person.getMyPos(); // look at person
+			eyes[0] = centre[0];
 			eyes[1] = centre[1] + this.dstFromPerson;
 			eyes[2] = centre[2] + this.dstFromPerson;
-			System.out.println(centre[0] + "xxx" + eyes[0]);
+
+			System.out.println(eyes[0] + "xxx" + angleAroundPerson);
 
 		}
 		// System.out.println(">>>" + angle);
@@ -141,4 +149,14 @@ public class Camera {
 	public void setPerson(Avatar person) {
 		this.person = person;
 	}
+
+	public void rightAngleAroundPerson() {
+		angleAroundPerson = (angleAroundPerson + 10) % 360;
+	}
+
+	public void leftAngleAroundPerson() {
+		angleAroundPerson = (angleAroundPerson - 10) % 360;
+
+	}
+
 }
