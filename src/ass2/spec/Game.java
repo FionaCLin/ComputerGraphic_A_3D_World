@@ -7,6 +7,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.glu.GLU;
@@ -33,15 +36,16 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	private Model myModel = Model.Terrain;
 	private boolean mySmooth = false;
 
-	private String textureNames[] = { "grass.bmp", "tree.jpg", "road.png", "avatar_face.png" };
-	private String textureExtensions[] = { "bmp", "jpg", "png", "png" };
+	private String textureNames[] = { "grass.bmp", "tree.jpg", "leaves.jpg", "road.png", "bearfur.jpg",
+			"bearface.jpg" };
+	private String textureExtensions[] = { "bmp", "jpg", "jpg", "png", "jpg", "jpg" };
 	private int curTex;
 	private boolean myModulate;
 	private boolean mySpecularSep;
 	private boolean mySoomth = true;
 
 	public enum Model {
-		Terrain, Tree, Road, Avatar
+		Terrain, Tree, Leaves, Road, AvatarFur, AvatarFace
 	}
 
 	private Texture myTextures[];
@@ -50,9 +54,6 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		super("Assignment 2");
 		myTerrain = terrain;
 		camera = new Camera(myTerrain.size());
-		double camerax = camera.getCamerax();
-		double cameraz = camera.getCameraz();
-		person = new Avatar(camerax, myTerrain.altitude(camerax, cameraz - 6.5), cameraz - 6.5);
 
 	}
 
@@ -105,7 +106,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 
 		setUpLighting(gl);
-		
+
 		gl.glLoadIdentity();
 		camera.setCamera(this.myTerrain.vertex_mesh());
 		// use the texture to modulate diffuse and ambient lighting
@@ -171,6 +172,13 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		for (int i = 0; i < this.getNumTextures(); i++) {
 			myTextures[i] = new Texture(this, gl, "src/texture/" + this.getTexName(i), this.getTexExtension(i), true);
 		}
+		Texture face = myTextures[Model.AvatarFace.ordinal()];
+		Texture fur = myTextures[Model.AvatarFur.ordinal()];
+
+		double camerax = camera.getCamerax();
+		double cameraz = camera.getCameraz();
+
+		person = new Avatar(camerax, myTerrain.altitude(camerax, cameraz - 6.5), cameraz - 6.5, face, fur);
 
 	}
 
@@ -250,6 +258,14 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		}
 		gl.glEnd();
 
+		// draw trees
+		List<Tree> trees = myTerrain.trees();
+		for (Tree t : trees) {
+
+			t.setTextures(myTextures[Model.Leaves.ordinal()], myTextures[Model.Tree.ordinal()]);
+			t.drawTree(gl);
+		}
+
 	}
 
 	@Override
@@ -294,13 +310,13 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 			break;
 		case KeyEvent.VK_Q:
 			if (isfollowing) {
-				camera.upAngleAroundPerson();
+				camera.leftAngleAroundPerson();
 			}
 
 			break;
 		case KeyEvent.VK_E:
 			if (isfollowing) {
-				camera.downAngleAroundPerson();
+				camera.rightAngleAroundPerson();
 			}
 			break;
 		case KeyEvent.VK_SPACE:
