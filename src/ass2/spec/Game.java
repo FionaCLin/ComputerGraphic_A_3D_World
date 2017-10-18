@@ -38,7 +38,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	private int curTex;
 	private boolean myModulate;
 	private boolean mySpecularSep;
-	private boolean mySoomth;
+	private boolean mySoomth = true;
 
 	public enum Model {
 		Terrain, Tree, Road, Avatar
@@ -64,10 +64,6 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		GLProfile glp = GLProfile.getDefault();
 		GLCapabilities caps = new GLCapabilities(glp);
 		GLJPanel panel = new GLJPanel();
-		
-		
-		TextureView view1 = new TextureView(this);
-		panel.addGLEventListener(view1);
 
 		// add a GL Event listener to handle rendering
 		panel.addGLEventListener(this);
@@ -103,19 +99,15 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 	@Override
 	public void display(GLAutoDrawable drawable) {
+
 		GL2 gl = drawable.getGL().getGL2();
 
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
-		// clear the window and depth buffer
-		setUpLighting(gl);
-		gl.glClearColor(0, 0, 0, 1);
-		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
+		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 
+		setUpLighting(gl);
+		
 		gl.glLoadIdentity();
 		camera.setCamera(this.myTerrain.vertex_mesh());
-
-		// bind the texture
-		gl.glBindTexture(GL.GL_TEXTURE_2D, myTextures[getTexId()].getTextureId());
 		// use the texture to modulate diffuse and ambient lighting
 		if (getModulate()) {
 			gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_MODULATE);
@@ -144,92 +136,71 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	@Override
 	public void init(GLAutoDrawable drawable) {
 		GL2 gl = drawable.getGL().getGL2();
+
+		gl.glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+
 		gl.glEnable(GL2.GL_DEPTH_TEST);
-		// By enabling lighting, color is worked out differently.
-		// normalise normals (!)
-		// this is necessary to make lighting work properly
+
 		gl.glEnable(GL2.GL_NORMALIZE);
 		gl.glDisable(GL.GL_CULL_FACE);
 
 		gl.glEnable(GL2.GL_LIGHTING);
-		// When you enable lighting you must still actually
-		// turn on a light such as this default light.
+		gl.glEnable(GL2.GL_LIGHT0);
 
-		// Light property vectors.
-		float lightAmb[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-		float lightDifAndSpec[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		float lightPos[] = myTerrain.getSunlight();
-		float globAmb[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+		// material parameter set for metallic gold or brass
 
-		// Light properties.
-		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, lightAmb, 0);
-		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, lightDifAndSpec, 0);
-		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_SPECULAR, lightDifAndSpec, 0);
-		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, lightPos, 0);
+		float ambient[] = { 0.33f, 0.22f, 0.03f, 1.0f };
+		float diffuse[] = { 0.78f, 0.57f, 0.11f, 1.0f };
+		float specular[] = { 0.99f, 0.91f, 0.81f, 1.0f };
+		float shininess = 27.8f;
 
-		gl.glEnable(GL2.GL_LIGHT0); // Enable particular light source.
-		gl.glLightModelfv(GL2.GL_LIGHT_MODEL_AMBIENT, globAmb, 0); // Global
-																	// ambient
-																	// light.
-		gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_TRUE); // Enable
-																	// two-sided
-																	// lighting.
-		gl.glLightModeli(GL2.GL_LIGHT_MODEL_LOCAL_VIEWER, GL2.GL_TRUE); // Enable
-																		// local
-																		// viewpoint.
+		gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_TRUE);
+		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT, ambient, 0);
+		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_DIFFUSE, diffuse, 0);
+		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SPECULAR, specular, 0);
+		gl.glMaterialf(GL2.GL_FRONT_AND_BACK, GL2.GL_SHININESS, shininess);
 
-		// Material property vectors.
-		float matAmbAndDif2[] = { 0.9f, 0.0f, 0.0f, 1.0f };
-		float matAmbAndDif1[] = { 0.0f, 0.9f, 0.0f, 1.0f };
-		float matSpec[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		float matShine[] = { 50.0f };
+		// Turn on OpenGL texturing.
+		gl.glEnable(GL2.GL_TEXTURE_2D);
 
-		// Material properties.
-		gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_AMBIENT_AND_DIFFUSE, matAmbAndDif1, 0);
-		gl.glMaterialfv(GL2.GL_BACK, GL2.GL_AMBIENT_AND_DIFFUSE, matAmbAndDif2, 0);
-		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SPECULAR, matSpec, 0);
-		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SHININESS, matShine, 0);
-
-		// Enable color material mode:
-		// The ambient and diffuse color of the front faces will track the color
-		// set by glColor().
-		gl.glEnable(GL2.GL_COLOR_MATERIAL);
-		gl.glColorMaterial(GL2.GL_FRONT, GL2.GL_AMBIENT_AND_DIFFUSE);
-		// enable texturing
-		gl.glEnable(GL.GL_TEXTURE_2D);
+		// gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL2.GL_DONT_CARE);
+		gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL2.GL_NICEST);
 		// Load textures
+
 		myTextures = new Texture[this.getNumTextures()];
 		for (int i = 0; i < this.getNumTextures(); i++) {
-			myTextures[i] = new Texture(gl, "src/texture/" + this.getTexName(i), this.getTexExtension(i), true);
+			myTextures[i] = new Texture(this, gl, "src/texture/" + this.getTexName(i), this.getTexExtension(i), true);
 		}
 
 	}
 
 	public void setUpLighting(GL2 gl) {
-		// Light property vectors.
-		float lightPos[] = { 0.0f, 1.5f, 3.0f, 1.0f };
 
-		float lightAmb[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-		float lightDifAndSpec[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		float globAmb[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+		gl.glEnable(GL2.GL_LIGHTING);
+		// When you enable lighting you must still actually
+		// turn on a light such as this default light.
 
-		gl.glEnable(GL2.GL_LIGHT0); // Enable particular light source.
+		// material parameter set for metallic gold or brass
 
-		// Set light properties.
-		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, lightAmb, 0);
-		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, lightDifAndSpec, 0);
-		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_SPECULAR, lightDifAndSpec, 0);
+		float ambient[] = { 0.3f, 0.3f, 0.3f, 1.0f };
+		float diffuse[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+		float specular[] = { 0.99f, 0.91f, 0.81f, 1.0f };
+		float shininess = 27.8f;
 
-		// This position gets multiplied by current transformation
+		gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_TRUE);
+		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT, ambient, 0);
+		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_DIFFUSE, diffuse, 0);
+		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SPECULAR, specular, 0);
+		gl.glMaterialf(GL2.GL_FRONT_AND_BACK, GL2.GL_SHININESS, shininess);
 
-		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, lightPos, 0);
+		gl.glShadeModel(this.isSmooth() ? GL2.GL_SMOOTH : GL2.GL_FLAT);
 
-		gl.glLightModelfv(GL2.GL_LIGHT_MODEL_AMBIENT, globAmb, 0); // Global
-																	// ambient
-																	// light.
-		gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_TRUE); // Enable
-																	// two-sided
-																	// lighting.
+		if (this.isSpecular()) {
+
+			gl.glLightModeli(GL2.GL_LIGHT_MODEL_COLOR_CONTROL, GL2.GL_SEPARATE_SPECULAR_COLOR);
+		} else {
+			gl.glLightModeli(GL2.GL_LIGHT_MODEL_COLOR_CONTROL, GL2.GL_SINGLE_COLOR);
+		}
 	}
 
 	@Override
@@ -250,6 +221,12 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 	private void draw(GL2 gl) {
 		// draw the Terrian
+		myModel = Model.Terrain;
+		// Turn on OpenGL texturing.
+		gl.glEnable(GL2.GL_TEXTURE_2D);
+		// bind the texture
+		gl.glBindTexture(GL.GL_TEXTURE_2D, myTextures[getTexId()].getTextureId());
+
 		double[][][] verties = this.myTerrain.vertex_mesh();
 		gl.glBegin(GL2.GL_TRIANGLES);
 		{
@@ -257,7 +234,13 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 				for (int j = 0; j < verties[i].length; j++) {
 					if (j != 3) {
 						double[] vertex = verties[i][j];
-						gl.glVertex3dv(vertex, 0);
+						// myTextures[getTexId()].draw(gl, j);
+
+						double[] textCoord = { 0, 0, 1, 0, 1, 1 };
+
+						gl.glTexCoord2d(textCoord[j * 2], textCoord[j * 2 + 1]);
+						gl.glVertex3d(vertex[0], vertex[1], vertex[2]);
+						// gl.glVertex3dv(vertex, 0);
 					} else {
 						double[] normal = verties[i][j];
 						gl.glNormal3dv(normal, 0);
@@ -309,7 +292,17 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 				person.setMyPos(pos);
 			}
 			break;
+		case KeyEvent.VK_Q:
+			if (isfollowing) {
+				camera.upAngleAroundPerson();
+			}
 
+			break;
+		case KeyEvent.VK_E:
+			if (isfollowing) {
+				camera.downAngleAroundPerson();
+			}
+			break;
 		case KeyEvent.VK_SPACE:
 			isfollowing = (!isfollowing);
 			if (isfollowing)
