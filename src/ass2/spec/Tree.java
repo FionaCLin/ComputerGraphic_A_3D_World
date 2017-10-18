@@ -36,7 +36,7 @@ public class Tree {
 		gl.glPushMatrix();
 		// Turn on OpenGL texturing.
 			gl.glTranslated(myPos[0], myPos[1], myPos[2]);
-			gl.glScaled(.5, .5, .5);
+			gl.glScaled(.35, .35, .35);
 			gl.glTranslated(0, 2.5, 0);
 			gl.glColor3f(102f / 255, 0, 51f / 255);
 			// bind the texture
