@@ -100,6 +100,7 @@ public class Camera {
 			System.out.println(centre[0] + "xxx");
 		} else {
 			centre = person.getMyPos(); // look at person
+
 			eyes[0] = centre[0] + this.dstFromPerson;
 			eyes[1] = centre[1] + this.dstFromPerson;
 			eyes[2] = centre[2] + this.dstFromPerson;
