@@ -87,13 +87,13 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 	/**
 	 * Load a level file and display it.
-	 * 
+	 *
 	 * @param args
 	 *            - The first argument is a level file in JSON format
 	 * @throws FileNotFoundException
 	 */
 	public static void main(String[] args) throws FileNotFoundException {
-		Terrain terrain = LevelIO.load(new File(args[0]));
+		Terrain terrain = LevelIO.load(new File("src/test4.json"));
 		Game game = new Game(terrain);
 		game.run();
 	}
@@ -264,6 +264,12 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 			t.setTextures(myTextures[Model.Leaves.ordinal()], myTextures[Model.Tree.ordinal()]);
 			t.drawTree(gl);
+		}
+
+		List<Road> roads = myTerrain.roads();
+		for(Road r : roads){
+			r.setTextures(myTextures[Model.Road.ordinal()]);
+			r.drawRoad(gl);
 		}
 
 	}
