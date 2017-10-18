@@ -163,52 +163,57 @@ public class Road {
        
        gl.glBindTexture(GL2.GL_TEXTURE_2D, myTexture.getTextureId());
 
-        gl.glBegin(GL2.GL_QUAD_STRIP); {
-            
-            double[] start = point(0);
-            double[] spinePoint;
-            double rate = 0.5;
-            for(double i = 0.01; i < 1; i += 0.01) {
+       gl.glPushMatrix();{
+            gl.glBegin(GL2.GL_QUAD_STRIP); {
+
+                double[] start = point(0);
+                double[] spinePoint;
+                double rate = 0.5;
+                for(double i = 0.01; i < 1; i += 0.01) {
 
 
 
-                spinePoint = point(i);
-                double[][] normals = normal(start, spinePoint);
-                normals[0] = normalise(normals[0]);
-                normals[1] = normalise(normals[1]);
+                    spinePoint = point(i);
+                    double[][] normals = normal(start, spinePoint);
+                    normals[0] = normalise(normals[0]);
+                    normals[1] = normalise(normals[1]);
 
-                // get points on x,z coordinate
-                double[] p = getPoint(normals[0], spinePoint,rate);
-                double[] q = getPoint(normals[1], spinePoint,rate);
-
-
-                //glTexCoord2d(i, 0);
-                // gl.glVertex3d(p0], myTerrain.getGridAltitude( (int)q[0],(int)q[1]), p[1]);
-                //gl.glColor3f(0f,1f,0f);
-
-                //gl.glTexCoord2d(i, 1);
-                  //gl.glVertex3d(q[0], myTerrain.altitude(q[0],q[1]),q[1]);
-              //gl.glVertex3d(q[0], myTerrain.getGridAltitude( (int)q[0], (int)q[1] ), q[1]);
-                //gl.glColor3f(0f,1f,0f);
+                    // get points on x,z coordinate
+                    double[] p = getPoint(normals[0], spinePoint,rate);
+                    double[] q = getPoint(normals[1], spinePoint,rate);
 
 
-                gl.glTexCoord2d(i, 0);
-                //gl.glVertex3d(p[0], myTerrain.altitude( bound(p[0],myTerrain.size().width-0.5) ,bound(p[1],myTerrain.size().height) ), p[1]);
-                gl.glVertex3d(p[0], myTerrain.getGridAltitude(bound(p[0],myTerrain.size().width-1) ,bound(p[1],myTerrain.size().height-1))+0.02, p[1]);
-                int val=bound(p[0],myTerrain.size().width) ;
-                System.out.println(val);
+                    //glTexCoord2d(i, 0);
+                    // gl.glVertex3d(p0], myTerrain.getGridAltitude( (int)q[0],(int)q[1]), p[1]);
+                    //gl.glColor3f(0f,1f,0f);
 
-                gl.glTexCoord2d(i, 1);
-                gl.glVertex3d(q[0], myTerrain.getGridAltitude(bound(q[0],myTerrain.size().width-1) ,bound(q[1],myTerrain.size().height-1))+0.02, q[1]);
+                    //gl.glTexCoord2d(i, 1);
+                    //gl.glVertex3d(q[0], myTerrain.altitude(q[0],q[1]),q[1]);
+                    //gl.glVertex3d(q[0], myTerrain.getGridAltitude( (int)q[0], (int)q[1] ), q[1]);
+                    //gl.glColor3f(0f,1f,0f);
 
 
+                    gl.glTexCoord2d(i, 0);
+                    //gl.glVertex3d(p[0], myTerrain.altitude( bound(p[0],myTerrain.size().width-0.5) ,bound(p[1],myTerrain.size().height) ), p[1]);
+                    gl.glVertex3d(p[0], myTerrain.getGridAltitude(bound(p[0],myTerrain.size().width-1) ,bound(p[1],myTerrain.size().height-1))+0.02, p[1]);
+                    int val=bound(p[0],myTerrain.size().width) ;
+                    //System.out.println(val);
+
+                    gl.glTexCoord2d(i, 1);
+                    gl.glVertex3d(q[0], myTerrain.getGridAltitude(bound(q[0],myTerrain.size().width-1) ,bound(q[1],myTerrain.size().height-1))+0.02, q[1]);
 
 
 
-                start = spinePoint;
-            }
 
-        } gl.glEnd();
+
+                    start = spinePoint;
+                }
+
+            } gl.glEnd();
+        }
+        gl.glPopMatrix();
+
+
 
     }
 
