@@ -33,7 +33,7 @@ public class Avatar {
 			gl.glTranslated(0, 2.5, 0);
 			gl.glColor3f(102f / 255, 0, 51f / 255);
 			// bind the texture
-			gl.glBindTexture(GL.GL_TEXTURE_2D, myTextures[1].getTextureId());
+			gl.glBindTexture(GL.GL_TEXTURE_2D, myTextures[0].getTextureId());
 
 			GLU glu = new GLU();
             // the built in glut sphere does not have texture coordinates set
@@ -42,6 +42,8 @@ public class Avatar {
             glu.gluQuadricTexture(quadric, true);
             glu.gluQuadricNormals(quadric, GLU.GLU_SMOOTH);
             glu.gluSphere(quadric, 1, 10, 10);
+        	// bind the texture
+			gl.glBindTexture(GL.GL_TEXTURE_2D, myTextures[1].getTextureId());
 
 			
 //			glut.glutSolidSphere(1.0, 10, 10);
