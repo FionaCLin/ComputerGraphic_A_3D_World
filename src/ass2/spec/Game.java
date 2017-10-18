@@ -11,6 +11,7 @@ import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.glu.GLU;
 
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.gl2.GLUT;
@@ -26,22 +27,24 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	private Avatar person;
 	private Camera camera;
 
-	/**
-	 * might need to comment the thing below
-	 * 
-	 * @param terrain
-	 */
-	private double rotateX = 0;
-	private double rotateY = 0;
-	private Point myMousePoint = null;
-	private static final int ROTATION_SCALE = 1;
-	private boolean showSides = true;
-
 	private boolean isfollowing = false;
 
 	// texture files
-	private String textureExt1 = "bmp";
-	private String textureFileName1 = "src/week8/grass.bmp";
+	private Model myModel = Model.Terrain;
+	private boolean mySmooth = false;
+
+	private String textureNames[] = { "grass.bmp", "tree.jpg", "road.png", "avatar_face.png" };
+	private String textureExtensions[] = { "bmp", "jpg", "png", "png" };
+	private int curTex;
+	private boolean myModulate;
+	private boolean mySpecularSep;
+	private boolean mySoomth;
+
+	public enum Model {
+		Terrain, Tree, Road, Avatar
+	}
+
+	private Texture myTextures[];
 
 	public Game(Terrain terrain) {
 		super("Assignment 2");
@@ -61,8 +64,12 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		GLProfile glp = GLProfile.getDefault();
 		GLCapabilities caps = new GLCapabilities(glp);
 		GLJPanel panel = new GLJPanel();
-		// add a GL Event listener to handle rendering
+		
+		
+		TextureView view1 = new TextureView(this);
+		panel.addGLEventListener(view1);
 
+		// add a GL Event listener to handle rendering
 		panel.addGLEventListener(this);
 
 		// NEW: add a key listener to respond to keypresses
@@ -107,6 +114,15 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		gl.glLoadIdentity();
 		camera.setCamera(this.myTerrain.vertex_mesh());
 
+		// bind the texture
+		gl.glBindTexture(GL.GL_TEXTURE_2D, myTextures[getTexId()].getTextureId());
+		// use the texture to modulate diffuse and ambient lighting
+		if (getModulate()) {
+			gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_MODULATE);
+		} else {
+			gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_REPLACE);
+		}
+
 		gl.glColor3f(0, 0.5f, 0);
 		draw(gl);
 
@@ -142,7 +158,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		// Light property vectors.
 		float lightAmb[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		float lightDifAndSpec[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		float lightPos[] = { 0.0f, 1.5f, 3.0f, 0.0f };
+		float lightPos[] = myTerrain.getSunlight();
 		float globAmb[] = { 0.2f, 0.2f, 0.2f, 1.0f };
 
 		// Light properties.
@@ -179,6 +195,13 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		// set by glColor().
 		gl.glEnable(GL2.GL_COLOR_MATERIAL);
 		gl.glColorMaterial(GL2.GL_FRONT, GL2.GL_AMBIENT_AND_DIFFUSE);
+		// enable texturing
+		gl.glEnable(GL.GL_TEXTURE_2D);
+		// Load textures
+		myTextures = new Texture[this.getNumTextures()];
+		for (int i = 0; i < this.getNumTextures(); i++) {
+			myTextures[i] = new Texture(gl, "src/texture/" + this.getTexName(i), this.getTexExtension(i), true);
+		}
 
 	}
 
@@ -321,28 +344,48 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 	}
 
+	public boolean getModulate() {
+		return myModulate;
+	}
+
+	public int getNumTextures() {
+		return textureNames.length;
+	}
+
+	public int getTexId() {
+		return curTex;
+	}
+
+	public String getTexName(int i) {
+		return textureNames[i];
+
+	}
+
+	public String getTexExtension(int i) {
+		return textureExtensions[i];
+	}
+
+	public Model getModel() {
+		return myModel;
+	}
+
+	public boolean isSmooth() {
+		return mySoomth;
+	}
+
+	public boolean isSpecular() {
+		return mySpecularSep;
+	}
+
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		// TODO Auto-generated method stub
-		Point p = e.getPoint();
 
-		if (myMousePoint != null) {
-			int dx = p.x - myMousePoint.x;
-			int dy = p.y - myMousePoint.y;
-
-			// Note: dragging in the x dir rotates about y
-			// dragging in the y dir rotates about x
-			rotateY += dx * ROTATION_SCALE;
-			rotateX += dy * ROTATION_SCALE;
-
-		}
-
-		myMousePoint = p;
 	}
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
 		// TODO Auto-generated method stub
-		myMousePoint = e.getPoint();
+
 	}
 }
