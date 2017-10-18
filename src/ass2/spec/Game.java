@@ -34,14 +34,14 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 	// texture files
 	private Model myModel = Model.Terrain;
-	private boolean mySmooth = false;
+	private boolean mySmooth = true;
 
-	private String textureNames[] = { "grass.bmp", "tree.jpg", "leaves.jpg", "road.png", "bearfur.jpg",
-			"bearface.jpg" };
-	private String textureExtensions[] = { "bmp", "jpg", "jpg", "png", "jpg", "jpg" };
+	private String textureNames[] = { "grass.bmp", "tree.jpg", "leaves.jpg", "road.png", "bearfur.jpg", "bearface.jpg",
+			"sky.bmp" };
+	private String textureExtensions[] = { "bmp", "jpg", "jpg", "png", "jpg", "jpg", "bmp" };
 	private int curTex;
 	private boolean myModulate;
-	private boolean mySpecularSep;
+	private boolean mySpecularSep = true;
 	private boolean mySoomth = true;
 
 	public enum Model {
@@ -109,6 +109,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 		gl.glLoadIdentity();
 		camera.setCamera(this.myTerrain.vertex_mesh());
+
 		// use the texture to modulate diffuse and ambient lighting
 		if (getModulate()) {
 			gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_MODULATE);
@@ -121,10 +122,8 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 		GLUT glut = new GLUT();
 
-		glut.glutSolidSphere(1.0, 20, 20);
+		// glut.glutSolidSphere(1.0, 20, 20);
 		person.drawAvatar(gl, glut);
-
-		// gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_FILL);
 
 	}
 
@@ -138,7 +137,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	public void init(GLAutoDrawable drawable) {
 		GL2 gl = drawable.getGL().getGL2();
 
-		gl.glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+		gl.glClearColor(135 / 255f, 206 / 255f, 250 / 255f, 0.5f);
 
 		gl.glEnable(GL2.GL_DEPTH_TEST);
 
@@ -148,18 +147,9 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		gl.glEnable(GL2.GL_LIGHTING);
 		gl.glEnable(GL2.GL_LIGHT0);
 
-		// material parameter set for metallic gold or brass
-
-		float ambient[] = { 0.33f, 0.22f, 0.03f, 1.0f };
-		float diffuse[] = { 0.78f, 0.57f, 0.11f, 1.0f };
-		float specular[] = { 0.99f, 0.91f, 0.81f, 1.0f };
-		float shininess = 27.8f;
-
-		gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_TRUE);
-		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT, ambient, 0);
-		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_DIFFUSE, diffuse, 0);
-		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SPECULAR, specular, 0);
-		gl.glMaterialf(GL2.GL_FRONT_AND_BACK, GL2.GL_SHININESS, shininess);
+		float[] pos = myTerrain.getSunlight();
+		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, pos, 0);
+		setUpLighting(gl);
 
 		// Turn on OpenGL texturing.
 		gl.glEnable(GL2.GL_TEXTURE_2D);
