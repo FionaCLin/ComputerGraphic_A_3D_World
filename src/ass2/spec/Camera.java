@@ -11,7 +11,8 @@ public class Camera {
 	private double cameraz;
 	private Avatar person;
 	private double step = .1;
-	private double dstFromPerson = 3;
+	private double dstAbovePerson = 3;
+	private double dstAwayPerson = 4 ;
 	private double angleAroundPerson = 10;
 
 	private Dimension size;
@@ -73,7 +74,7 @@ public class Camera {
 		double[] centre = { size.getHeight() / 2, 0.0, size.getWidth() / 2 };
 
 		eyes[0] = camerax;
-		eyes[1] = 3; // Mi nimum height of camera.
+		eyes[1] = 3; // Minimum height of camera.
 		eyes[2] = cameraz;
 
 		// Find max height of nearby terrain points.
@@ -101,19 +102,24 @@ public class Camera {
 			centre[2] = eyes[2] + dir[2];
 			System.out.println(eyes[0] + "xxx angle " + angle);
 			System.out.println(dir[0] + " x " + dir[1] + " y " + dir[2] + " z " + angle + " angle");
+			System.out.println(" x " + centre[0] + " y " + centre[1] + " z " + centre[2] + " angle " + angle);
 		} else {
-			centre = person.getMyPos(); // look at person
-			dir[0] = Math.sin(Math.toRadians(angle));
+			double[] camera = person.getMyPos(); // look at person
+			dir[0] = Math.sin(Math.toRadians(angleAroundPerson));
 			dir[1] = -.5;
-			dir[2] = -Math.cos(Math.toRadians(angle));
+			dir[2] = -Math.cos(Math.toRadians(angleAroundPerson));
 
 			// eyes = person.getMyPos(); // look at person
-			eyes[0] = centre[0];
-			eyes[1] = centre[1] + this.dstFromPerson;
-			eyes[2] = centre[2] + this.dstFromPerson;
+			eyes[1] = camera[1] + this.dstAbovePerson;
+			eyes[2] = camera[2] + this.dstAwayPerson;
+			centre[0] = camera[0] + dir[0];
+			centre[1] = camera[1] + dir[1];
+			centre[2] = camera[2] + dir[2];
 
-			System.out.println(eyes[0] + "xxx" + angleAroundPerson);
-
+			System.out.println("xxx" + eyes[0] + " Y " + eyes[1] + " Z " + eyes[2] + angleAroundPerson);
+			System.out.println(dir[0] + " x " + dir[1] + " y " + dir[2] + " z " + angleAroundPerson + " angle");
+			System.out.println(
+					" ####x " + centre[0] + " y " + centre[1] + " z " + centre[2] + " angle " + angleAroundPerson);
 		}
 		// System.out.println(">>>" + angle);
 		glu.gluLookAt(eyes[0], eyes[1], eyes[2], centre[0], centre[1], centre[2], 0.0, 1.0, 0.0);
