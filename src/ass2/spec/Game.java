@@ -36,11 +36,11 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	private Model myModel = Model.Terrain;
 	private boolean mySmooth = true;
 
-	private String textureNames[] = { "grass.bmp", "tree.jpg", "leaves.jpg", "road.png", "bearfur.jpg", "bearface.jpg",
-			"sky.bmp" };
-	private String textureExtensions[] = { "bmp", "jpg", "jpg", "png", "jpg", "jpg", "bmp" };
+	private String textureNames[] = { "grass.bmp", "tree.png", "leaves.jpg", "road.png", "bearfur.jpg",
+			"bearface.jpg" };
+	private String textureExtensions[] = { "bmp", "png", "jpg", "png", "jpg", "jpg" };
 	private int curTex;
-	private boolean myModulate;
+	private boolean myModulate = true;
 	private boolean mySpecularSep = true;
 	private boolean mySoomth = true;
 
@@ -93,7 +93,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	 * @throws FileNotFoundException
 	 */
 	public static void main(String[] args) throws FileNotFoundException {
-		Terrain terrain = LevelIO.load(new File("src/test4.json"));
+		Terrain terrain = LevelIO.load(new File(args[0]));
 		Game game = new Game(terrain);
 		game.run();
 	}
@@ -105,10 +105,14 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 
-		setUpLighting(gl);
+		// setUpLighting(gl);
 
 		gl.glLoadIdentity();
 		camera.setCamera(this.myTerrain.vertex_mesh());
+
+		float[] pos = myTerrain.getSunlight();
+		float[] lightpos = { pos[0], pos[1], pos[2], 0 };
+		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, lightpos, 0);
 
 		// use the texture to modulate diffuse and ambient lighting
 		if (getModulate()) {
@@ -117,12 +121,12 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 			gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_REPLACE);
 		}
 
-		gl.glColor3f(0, 0.5f, 0);
+		// gl.glColor3f(0, 0.5f, 0);
 		draw(gl);
 
 		GLUT glut = new GLUT();
 
-		// glut.glutSolidSphere(1.0, 20, 20);
+		glut.glutSolidSphere(1.0, 20, 20);
 		person.drawAvatar(gl, glut);
 
 	}
@@ -142,13 +146,11 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		gl.glEnable(GL2.GL_DEPTH_TEST);
 
 		gl.glEnable(GL2.GL_NORMALIZE);
-		gl.glDisable(GL.GL_CULL_FACE);
+		gl.glEnable(GL.GL_CULL_FACE);
 
 		gl.glEnable(GL2.GL_LIGHTING);
 		gl.glEnable(GL2.GL_LIGHT0);
 
-		float[] pos = myTerrain.getSunlight();
-		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, pos, 0);
 		setUpLighting(gl);
 
 		// Turn on OpenGL texturing.
@@ -180,12 +182,12 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 		// material parameter set for metallic gold or brass
 
-		float ambient[] = { 0.3f, 0.3f, 0.3f, 1.0f };
+		float ambient[] = { 0.5f, 0.5f, 0.5f, 1.0f };
 		float diffuse[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-		float specular[] = { 0.99f, 0.91f, 0.81f, 1.0f };
-		float shininess = 27.8f;
+		float specular[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+		float shininess = 50f;
 
-		gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_TRUE);
+		// gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_TRUE);
 		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT, ambient, 0);
 		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_DIFFUSE, diffuse, 0);
 		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SPECULAR, specular, 0);
@@ -229,20 +231,21 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		gl.glBegin(GL2.GL_TRIANGLES);
 		{
 			for (int i = 0; i < verties.length; i++) {
-				for (int j = 0; j < verties[i].length; j++) {
-					if (j != 3) {
-						double[] vertex = verties[i][j];
-						// myTextures[getTexId()].draw(gl, j);
+				double[] normal = verties[i][3];
+				normal[0] *= 100;
+				System.out.println(normal[0] + " " + normal[1] + " " + normal[2]);
 
-						double[] textCoord = { 0, 0, 1, 0, 1, 1 };
+				gl.glNormal3dv(normal, 0);
 
-						gl.glTexCoord2d(textCoord[j * 2], textCoord[j * 2 + 1]);
-						gl.glVertex3d(vertex[0], vertex[1], vertex[2]);
-						// gl.glVertex3dv(vertex, 0);
-					} else {
-						double[] normal = verties[i][j];
-						gl.glNormal3dv(normal, 0);
-					}
+				for (int j = 0; j < 3; j++) {
+					double[] vertex = verties[i][j];
+					// myTextures[getTexId()].draw(gl, j);
+
+					double[] textCoord = { 0, 0, 1, 0, 1, 1 };
+
+					gl.glTexCoord2d(textCoord[j * 2], textCoord[j * 2 + 1]);
+					gl.glVertex3d(vertex[0], vertex[1], vertex[2]);
+					// gl.glVertex3dv(vertex, 0);
 				}
 			}
 		}
@@ -257,7 +260,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		}
 
 		List<Road> roads = myTerrain.roads();
-		for(Road r : roads){
+		for (Road r : roads) {
 			r.setTextures(myTextures[Model.Road.ordinal()]);
 			r.drawRoad(gl);
 		}
