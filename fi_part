@@ -6,3 +6,32 @@ Make the sun move and change colour according to the time of day (2 marks)
 Build a complex model or a model with walking animation or something beautiful or interesting for your avatar or your
 others!
 
+
+
+//vertex
+out vec4 colour;
+
+void main(void){
+		diff = rbo * lightingc * lightSource[0] 
+		spec
+		amb
+		colour = diff + spec + amb
+}
+
+//Fragement
+in vec2 texcoord;
+
+in vec4 colour;
+
+uniform sampler2D texSample;
+
+void main(void {
+//light calculations
+//get colour from lighting
+gl_Fragcolor = lightingColor * texture(texSample, texcoord);
+
+}
+
+JOGL
+
+lightfv(LIGHT1,	)

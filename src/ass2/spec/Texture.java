@@ -153,45 +153,4 @@ public class Texture {
 
 	}
 
-	private void setLighting(GL2 gl) {
-		gl.glShadeModel(myModel.isSmooth() ? GL2.GL_SMOOTH : GL2.GL_FLAT);
-		//
-		// // rotate the light
-		// gl.glMatrixMode(GL2.GL_MODELVIEW);
-		// gl.glPushMatrix();
-		// gl.glRotated(myRotateLightX, 1, 0, 0);
-		// gl.glRotated(myRotateLightY, 0, 1, 0);
-		//
-		// float[] pos = new float[] { 0.0f, 0.0f, 4.0f, 1.0f };
-		// gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, pos, 0);
-		// gl.glPopMatrix();
-		//
-		// // set the intensities
-		//
-		// float ambient = myModel.getAmbient();
-		// float diffuse = myModel.getDiffuse();
-		// float specular = myModel.getSpecular();
-		//
-		// float[] a = new float[4];
-		// a[0] = a[1] = a[2] = ambient;
-		// a[3] = 1.0f;
-		// gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, a, 0);
-		//
-		// float[] d = new float[4];
-		// d[0] = d[1] = d[2] = diffuse;
-		// d[3] = 1.0f;
-		// gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, d, 0);
-		//
-		// float[] s = new float[4];
-		// s[0] = s[1] = s[2] = specular;
-		// s[3] = 1.0f;
-		// gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_SPECULAR, s, 0);
-
-		if (myModel.isSpecular()) {
-
-			gl.glLightModeli(GL2.GL_LIGHT_MODEL_COLOR_CONTROL, GL2.GL_SEPARATE_SPECULAR_COLOR);
-		} else {
-			gl.glLightModeli(GL2.GL_LIGHT_MODEL_COLOR_CONTROL, GL2.GL_SINGLE_COLOR);
-		}
-	}
 }
