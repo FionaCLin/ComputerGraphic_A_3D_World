@@ -18,49 +18,13 @@ public class Sun {
 
 	public void drawSun(GL2 gl, GLUT glut) {
 		gl.glPushMatrix();
+		// shift along x = - 3*terrain.x
+		gl.glTranslated(-20, 0, 0);
+		// rotate aroung x = terrain.z / 2
 		glut.glutSolidSphere(1.0, 20, 20);
 		gl.glPopMatrix();
 
 	}
-
-	/**
-	 * @return the myPos
-	 */
-	public double[] getMyPos() {
-		return myPos;
-	}
-
-	/**
-	 * @param myPos
-	 *            the myPos to set
-	 */
-	public void setMyPos(double[] myPos) {
-		this.myPos = myPos;
-		System.out.println(myPos[0] + " x " + myPos[1] + " y " + myPos[2] + " z");
-	}
-
-	public void up(double height) {
-		myPos[1] = height;
-		myPos[2] -= step;
-		System.out.println(myPos[0] + " x " + myPos[1] + " y " + myPos[2] + " z");
-	}
-
-	public void down(double height) {
-		myPos[1] = height;
-		myPos[2] += step;
-		System.out.println(myPos[0] + " x " + myPos[1] + " y " + myPos[2] + " z");
-	}
-
-	public void left(double height) {
-		myPos[1] = height;
-		myPos[0] -= step;
-		System.out.println(myPos[0] + " x " + myPos[1] + " y " + myPos[2] + " z");
-	}
-
-	public void right(double height) {
-		myPos[1] = height;
-		myPos[0] += step;
-		System.out.println(myPos[0] + " x " + myPos[1] + " y " + myPos[2] + " z");
-	}
+	// set the rotate angle
 
 }

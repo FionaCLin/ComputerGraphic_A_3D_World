@@ -42,6 +42,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	private boolean mySpecularSep = true;
 	private boolean mySoomth = true;
 	private Sun sun;
+
 	public enum Model {
 		Terrain, Tree, Leaves, Road, AvatarFur, AvatarFace
 	}
@@ -123,8 +124,8 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		draw(gl);
 
 		GLUT glut = new GLUT();
-		
-//		glut.glutSolidSphere(1.0, 20, 20);
+		sun.drawSun(gl, glut);
+		// glut.glutSolidSphere(1.0, 20, 20);
 		if (camera.isFollow())
 			person.drawAvatar(gl, glut);
 
@@ -150,7 +151,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		gl.glEnable(GL2.GL_LIGHTING);
 		gl.glEnable(GL2.GL_LIGHT0);
 
-		setUpLighting(gl);
+		setUpLighting(gl,.5f);
 
 		// Turn on OpenGL texturing.
 		gl.glEnable(GL2.GL_TEXTURE_2D);
@@ -172,7 +173,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		camera.setPerson(person);
 	}
 
-	public void setUpLighting(GL2 gl) {
+	public void setUpLighting(GL2 gl, float ambi) {
 
 		gl.glEnable(GL2.GL_LIGHTING);
 		// When you enable lighting you must still actually
@@ -180,7 +181,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 		// material parameter set for metallic gold or brass
 
-		float ambient[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+		float ambient[] = { ambi, ambi, ambi, 1.0f };
 		float diffuse[] = { 0.5f, 0.5f, 0.5f, 1.0f };
 		float specular[] = { 0.5f, 0.5f, 0.5f, 1.0f };
 		float shininess = 50f;
