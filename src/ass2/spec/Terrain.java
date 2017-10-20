@@ -80,7 +80,6 @@ public class Terrain {
 		double[][] oldAlt = myAltitude;
 		myAltitude = new double[width][height];
 
-
 		for (int i = 0; i < width && i < oldAlt.length; i++) {
 			for (int j = 0; j < height && j < oldAlt[i].length; j++) {
 				myAltitude[i][j] = oldAlt[i][j];
@@ -124,20 +123,21 @@ public class Terrain {
 		double altitude = 0;
 		int x1 = (int) x;
 		int z1 = (int) z;
-		if (x1 < mySize.getWidth()-1 && z1 < mySize.getHeight()-1) {
-			// A==> vertex {x1, this.myAltitued[x1][z1],z1}
-			// B==> vertex {x1, this.myAltitued[x1][z1+1],z1+1}
-			double ya = interpolate(z1, z, z1 + 1, this.myAltitude[x1][z1], this.myAltitude[x1][z1 + 1]);
-			// new vertex { x1, ya, z}
+		if (x1 < mySize.getWidth() - 1 && z1 < mySize.getHeight() - 1
+			&& !(x1 == mySize.getWidth() - 1 || z1 == mySize.getHeight() - 1)) {
+				// A==> vertex {x1, this.myAltitued[x1][z1],z1}
+				// B==> vertex {x1, this.myAltitued[x1][z1+1],z1+1}
+				double ya = interpolate(z1, z, z1 + 1, this.myAltitude[x1][z1], this.myAltitude[x1][z1 + 1]);
+				// new vertex { x1, ya, z}
 
-			// A==> vertex {x2, this.myAltitued[x2][z1],z1}
-			// C==> vertex {x2, this.myAltitued[x2][z1+1],z1+1}
-			double yb = interpolate(z1, z, z1 + 1, this.myAltitude[x1 + 1][z1], this.myAltitude[x1 + 1][z1 + 1]);
-			// new vertex {x2, yb, z}
+				// A==> vertex {x2, this.myAltitued[x2][z1],z1}
+				// C==> vertex {x2, this.myAltitued[x2][z1+1],z1+1}
+				double yb = interpolate(z1, z, z1 + 1, this.myAltitude[x1 + 1][z1], this.myAltitude[x1 + 1][z1 + 1]);
+				// new vertex {x2, yb, z}
 
-			// new vertex { x1, ya, z}
-			// new vertex {x2, yb, z}
-			altitude = interpolate(x1, x, x1 + 1, ya, yb);
+				// new vertex { x1, ya, z}
+				// new vertex {x2, yb, z}
+				altitude = interpolate(x1, x, x1 + 1, ya, yb);
 		}
 		return altitude;
 	}
@@ -166,7 +166,7 @@ public class Terrain {
 	 * @param z
 	 */
 	public void addRoad(double width, double[] spine) {
-		Road road = new Road(width, spine,this);
+		Road road = new Road(width, spine, this);
 		myRoads.add(road);
 	}
 

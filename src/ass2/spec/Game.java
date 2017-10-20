@@ -41,7 +41,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	private boolean myModulate = true;
 	private boolean mySpecularSep = true;
 	private boolean mySoomth = true;
-
+	private Sun sun;
 	public enum Model {
 		Terrain, Tree, Leaves, Road, AvatarFur, AvatarFace
 	}
@@ -52,7 +52,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		super("Assignment 2");
 		myTerrain = terrain;
 		camera = new Camera();
-
+		sun = new Sun();
 	}
 
 	/**
@@ -123,8 +123,8 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		draw(gl);
 
 		GLUT glut = new GLUT();
-
-		glut.glutSolidSphere(1.0, 20, 20);
+		
+//		glut.glutSolidSphere(1.0, 20, 20);
 		if (camera.isFollow())
 			person.drawAvatar(gl, glut);
 
@@ -231,7 +231,8 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 			for (int i = 0; i < verties.length; i++) {
 				double[] normal = verties[i][3];
 				normal[0] *= 100;
-//				System.out.println(normal[0] + " " + normal[1] + " " + normal[2]);
+				// System.out.println(normal[0] + " " + normal[1] + " " +
+				// normal[2]);
 
 				gl.glNormal3dv(normal, 0);
 
@@ -273,36 +274,41 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-
+		double h = 0;
 		double[] pos = person.getMyPos();
 		// TODO Auto-generated method stub
 		switch (e.getKeyCode()) {
 		case KeyEvent.VK_W:
-			if (pos[2] > 1) {
-				pos[2] -= .5;
-				pos[1] = myTerrain.altitude(pos[0], pos[2]);
-				person.setMyPos(pos);
+			if (camera.isFollow()) {
+				if (pos[2] > 1)
+					h = myTerrain.altitude(pos[0], pos[2]);
+				person.up(h);
 			}
 			break;
 		case KeyEvent.VK_S:
-			if (pos[2] < myTerrain.size().getWidth() - 1) {
-				pos[2] += .5;
-				pos[1] = myTerrain.altitude(pos[0], pos[2]);
-				person.setMyPos(pos);
+			if (camera.isFollow()) {
+				if (pos[2] < myTerrain.size().getWidth() - 1)
+					h = myTerrain.altitude(pos[0], pos[2]);
+				System.out.println("####################");
+				System.out.println("########" + h);
+				person.down(h);
+				System.out.println("########" + h);
+				System.out.println("####################");
+
 			}
 			break;
 		case KeyEvent.VK_A:
-			if (pos[0] > 1) {
-				pos[0] -= .5;
-				pos[1] = myTerrain.altitude(pos[0], pos[2]);
-				person.setMyPos(pos);
+			if (camera.isFollow()) {
+				if (pos[0] > 1)
+					h = myTerrain.altitude(pos[0], pos[2]);
+				person.left(h);
 			}
 			break;
 		case KeyEvent.VK_D:
-			if (pos[0] < myTerrain.size().getHeight() - 1) {
-				pos[0] += .5;
-				pos[1] = myTerrain.altitude(pos[0], pos[2]);
-				person.setMyPos(pos);
+			if (camera.isFollow()) {
+				if (pos[0] < myTerrain.size().getHeight() - 1)
+					h = myTerrain.altitude(pos[0], pos[2]);
+				person.right(h);
 			}
 			break;
 		case KeyEvent.VK_Q:
@@ -320,21 +326,41 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 			camera.setFollow();
 			break;
 		case KeyEvent.VK_UP:
-			if (!camera.isFollow())
-				camera.up();
+			if (!camera.isFollow()) {
+				if (pos[2] < myTerrain.size().getWidth() - 1)
+					h = myTerrain.altitude(pos[0], pos[2]);
+				person.up(h);
+				camera.up(h);
+			}
 			break;
 		case KeyEvent.VK_DOWN:
-			if (!camera.isFollow())
-				camera.down();
+			if (!camera.isFollow()) {
+				if (pos[2] < myTerrain.size().getWidth() - 1)
+					h = myTerrain.altitude(pos[0], pos[2]);
+				person.down(h);
+				camera.down(h);
+			}
 			break;
 		case KeyEvent.VK_RIGHT:
-			if (!camera.isFollow())
-				camera.right();
+			if (!camera.isFollow()) {
+				if (pos[0] < myTerrain.size().getHeight() - 1)
+					h = myTerrain.altitude(pos[0], pos[2]);
+				person.right(h);
+				camera.right(h);
+			}
+
 			break;
 		case KeyEvent.VK_LEFT:
-			if (!camera.isFollow())
-				camera.left();
+			if (!camera.isFollow()) {
+				if (pos[0] > 1)
+					h = myTerrain.altitude(pos[0], pos[2]);
+
+				camera.left(h);
+			}
 			break;
+		case KeyEvent.VK_C:
+			if (e.isControlDown())
+				System.exit(EXIT_ON_CLOSE);
 		default:
 			break;
 		}

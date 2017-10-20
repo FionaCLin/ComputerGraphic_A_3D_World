@@ -11,7 +11,7 @@ import ass2.spec.Game.Model;
 public class Avatar {
 	private double[] myPos;
 	private Texture myTextures[] = new Texture[2];
-
+	private double step =.1;
 	public Avatar(double x, double y, double z, Texture face, Texture body) {
 		myPos = new double[3];
 		myPos[0] = x;
@@ -28,19 +28,11 @@ public class Avatar {
 			gl.glScaled(.25, .25, .25);
 			gl.glTranslated(0, 2.5, 0);
 			gl.glColor3f(102f / 255, 0, 51f / 255);
-			// bind the texture
-			gl.glBindTexture(GL.GL_TEXTURE_2D, myTextures[0].getTextureId());
 
 			GLU glu = new GLU();
-            // the built in glut sphere does not have texture coordinates set
-            //glut.glutSolidSphere(1, 20, 20);
-            GLUquadric quadric = glu.gluNewQuadric();
-            glu.gluQuadricTexture(quadric, true);
-            glu.gluQuadricNormals(quadric, GLU.GLU_SMOOTH);
-            glu.gluSphere(quadric, 1, 10, 10);
-        	// bind the texture
 			gl.glBindTexture(GL.GL_TEXTURE_2D, myTextures[1].getTextureId());
-
+			GLUquadric quadric = glu.gluNewQuadric();
+            
 			
 //			glut.glutSolidSphere(1.0, 10, 10);
 			gl.glPushMatrix();
@@ -53,6 +45,42 @@ public class Avatar {
 //				glut.glutSolidCylinder(0.5, 2, 20, 20);
 				glu.gluCylinder(quadric,.5,.5,2, 20, 20);
 			gl.glPopMatrix();
+
+			// bind the texture
+			gl.glBindTexture(GL.GL_TEXTURE_2D, myTextures[0].getTextureId());
+			gl.glRotated(-90, 1, 0, 0);
+            
+			// the built in glut sphere does not have texture coordinates set
+            //glut.glutSolidSphere(1, 20, 20);
+            glu.gluQuadricTexture(quadric, true);
+            glu.gluQuadricNormals(quadric, GLU.GLU_SMOOTH);
+            glu.gluSphere(quadric, 1, 10, 10);
+        	// bind the texture
+
+			gl.glBindTexture(GL.GL_TEXTURE_2D, myTextures[1].getTextureId());
+
+        	gl.glPushMatrix();
+        	
+				gl.glTranslated(-.75, .85, 0);
+				gl.glRotated(90, 1, 0, 0);
+				gl.glColor3f(102f / 255, 51f / 255, 0);
+				glu.gluQuadricTexture(quadric, true);
+	            glu.gluQuadricNormals(quadric, GLU.GLU_SMOOTH);
+//				glut.glutSolidCylinder(.5, .5, 10, 10);
+				glu.gluSphere(quadric,.5, 10, 10);
+			
+			gl.glPopMatrix();				
+			gl.glPushMatrix();
+
+				gl.glTranslated(.75, .85, 0);
+				gl.glRotated(90, 1, 0, 0);
+				gl.glColor3f(102f / 255, 51f / 255, 0);
+				glu.gluQuadricTexture(quadric, true);
+	            glu.gluQuadricNormals(quadric, GLU.GLU_SMOOTH);
+	            glu.gluSphere(quadric,.5, 10, 10);
+				
+			gl.glPopMatrix();
+
 		gl.glPopMatrix();
 
 	}
@@ -73,4 +101,27 @@ public class Avatar {
 		System.out.println(myPos[0] + " x "+myPos[1]+" y "+myPos[2]+" z");
 	}
 
+	public void up(double height) {
+		myPos[1] = height;
+		myPos[2] -= step;
+		System.out.println(myPos[0] + " x "+myPos[1]+" y "+myPos[2]+" z");
+	}
+
+	public void down(double height) {
+		myPos[1] = height;
+		myPos[2] += step;
+		System.out.println(myPos[0] + " x "+myPos[1]+" y "+myPos[2]+" z");
+	}
+
+	public void left(double height) {
+		myPos[1] = height;
+		myPos[0] -= step;
+		System.out.println(myPos[0] + " x "+myPos[1]+" y "+myPos[2]+" z");
+	}
+
+	public void right(double height) {
+		myPos[1] = height;
+		myPos[0] += step;
+		System.out.println(myPos[0] + " x "+myPos[1]+" y "+myPos[2]+" z");
+	}
 }
