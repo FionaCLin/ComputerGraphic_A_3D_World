@@ -30,8 +30,6 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	private Avatar person;
 	private Camera camera;
 
-	private boolean isfollowing = false;
-
 	// texture files
 	private Model myModel = Model.Terrain;
 	private boolean mySmooth = true;
@@ -53,7 +51,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	public Game(Terrain terrain) {
 		super("Assignment 2");
 		myTerrain = terrain;
-		camera = new Camera(myTerrain.size());
+		camera = new Camera();
 
 	}
 
@@ -108,7 +106,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		// setUpLighting(gl);
 
 		gl.glLoadIdentity();
-		camera.setCamera(this.myTerrain.vertex_mesh());
+		camera.setCamera();
 
 		float[] pos = myTerrain.getSunlight();
 		float[] lightpos = { pos[0], pos[1], pos[2], 0 };
@@ -127,7 +125,8 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		GLUT glut = new GLUT();
 
 		glut.glutSolidSphere(1.0, 20, 20);
-		person.drawAvatar(gl, glut);
+		if (camera.isFollow())
+			person.drawAvatar(gl, glut);
 
 	}
 
@@ -167,11 +166,10 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		Texture face = myTextures[Model.AvatarFace.ordinal()];
 		Texture fur = myTextures[Model.AvatarFur.ordinal()];
 
-		double camerax = camera.getCamerax();
-		double cameraz = camera.getCameraz();
-
-		person = new Avatar(camerax, myTerrain.altitude(camerax, cameraz - 6.5), cameraz - 6.5, face, fur);
-
+		int centrex = (int) myTerrain.size().getHeight() / 2;
+		int centrez = (int) myTerrain.size().getWidth() / 2;
+		person = new Avatar(centrex, myTerrain.altitude(centrex, centrez), centrez, face, fur);
+		camera.setPerson(person);
 	}
 
 	public void setUpLighting(GL2 gl) {
@@ -233,7 +231,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 			for (int i = 0; i < verties.length; i++) {
 				double[] normal = verties[i][3];
 				normal[0] *= 100;
-				System.out.println(normal[0] + " " + normal[1] + " " + normal[2]);
+//				System.out.println(normal[0] + " " + normal[1] + " " + normal[2]);
 
 				gl.glNormal3dv(normal, 0);
 
@@ -308,36 +306,34 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 			}
 			break;
 		case KeyEvent.VK_Q:
-			if (isfollowing) {
+			if (camera.isFollow()) {
 				camera.leftAngleAroundPerson();
 			}
 
 			break;
 		case KeyEvent.VK_E:
-			if (isfollowing) {
+			if (camera.isFollow()) {
 				camera.rightAngleAroundPerson();
 			}
 			break;
 		case KeyEvent.VK_SPACE:
-			isfollowing = (!isfollowing);
-			if (isfollowing)
-				camera.setPerson(person);
-			else
-				camera.setPerson(null);
+			camera.setFollow();
 			break;
 		case KeyEvent.VK_UP:
-			camera.up();
+			if (!camera.isFollow())
+				camera.up();
 			break;
 		case KeyEvent.VK_DOWN:
-
-			camera.down();
+			if (!camera.isFollow())
+				camera.down();
 			break;
 		case KeyEvent.VK_RIGHT:
-			camera.right();
-
+			if (!camera.isFollow())
+				camera.right();
 			break;
 		case KeyEvent.VK_LEFT:
-			camera.left();
+			if (!camera.isFollow())
+				camera.left();
 			break;
 		default:
 			break;
