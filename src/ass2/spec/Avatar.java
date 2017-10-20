@@ -21,10 +21,6 @@ public class Avatar {
 		myTextures[1] = body;
 	}
 
-	public double[] getPosition() {
-		return myPos;
-	}
-
 	public void drawAvatar(GL2 gl, GLUT glut) {
 		gl.glPushMatrix();
 		// Turn on OpenGL texturing.
