@@ -53,7 +53,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		super("Assignment 2");
 		myTerrain = terrain;
 		camera = new Camera();
-		double [] centre = {terrain.size().getWidth(),0,terrain.size().getHeight()};
+		double[] centre = { terrain.size().getWidth(), 0, terrain.size().getHeight() };
 		sun = new Sun(centre);
 	}
 
@@ -105,16 +105,14 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 
-
 		setUpLighting(gl, .8f, .5f, .5f, 80f);
-
 
 		gl.glLoadIdentity();
 		camera.setCamera(myTerrain);
 
 		float[] pos = myTerrain.getSunlight();
 		float[] lightpos = { pos[0], pos[1], pos[2], 0 };
-		
+
 		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, lightpos, 0);
 
 		// use the texture to modulate diffuse and ambient lighting
@@ -129,7 +127,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 		GLUT glut = new GLUT();
 		sun.drawSun(gl, glut);
-//		if (camera.isFollow())
+		// if (camera.isFollow())
 		person.drawAvatar(gl, glut);
 
 	}
@@ -153,9 +151,9 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 		gl.glEnable(GL2.GL_LIGHTING);
 		gl.glEnable(GL2.GL_LIGHT0);
-//
-//		setUpLighting(gl, .8f);
-//
+		//
+		// setUpLighting(gl, .8f);
+		//
 		// Turn on OpenGL texturing.
 		gl.glEnable(GL2.GL_TEXTURE_2D);
 
@@ -167,6 +165,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		for (int i = 0; i < this.getNumTextures(); i++) {
 			myTextures[i] = new Texture(this, gl, "src/texture/" + this.getTexName(i), this.getTexExtension(i), true);
 		}
+		myTerrain.setMyTexture(myTextures[Model.Terrain.ordinal()]);
 		Texture face = myTextures[Model.AvatarFace.ordinal()];
 		Texture fur = myTextures[Model.AvatarFur.ordinal()];
 
@@ -174,6 +173,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		int centrez = (int) myTerrain.size().getWidth() / 2;
 		person = new Avatar(centrex, myTerrain.altitude(centrex, centrez), centrez, face, fur);
 		camera.setPerson(person);
+		
 	}
 
 	public void setUpLighting(GL2 gl, float ambi, float diff, float spec, float shin) {
@@ -222,38 +222,14 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	}
 
 	private void draw(GL2 gl) {
-		// draw the Terrian
+		// // draw the Terrian
 		myModel = Model.Terrain;
-		// Turn on OpenGL texturing.
+		// // Turn on OpenGL texturing.
 		gl.glEnable(GL2.GL_TEXTURE_2D);
-		// bind the texture
+		// // bind the texture
 		gl.glBindTexture(GL.GL_TEXTURE_2D, myTextures[getTexId()].getTextureId());
 
-		double[][][] verties = this.myTerrain.vertex_mesh();
-		gl.glBegin(GL2.GL_TRIANGLES);
-		{
-			for (int i = 0; i < verties.length; i++) {
-				double[] normal = verties[i][3];
-				normal[0] *= 100;
-				// System.out.println(normal[0] + " " + normal[1] + " " +
-				// normal[2]);
-
-				gl.glNormal3dv(normal, 0);
-
-				for (int j = 0; j < 3; j++) {
-					double[] vertex = verties[i][j];
-					// myTextures[getTexId()].draw(gl, j);
-
-					double[] textCoord = { 0, 0, 1, 0, 1, 1 };
-
-					gl.glTexCoord2d(textCoord[j * 2], textCoord[j * 2 + 1]);
-					gl.glVertex3d(vertex[0], vertex[1], vertex[2]);
-					// gl.glVertex3dv(vertex, 0);
-				}
-			}
-		}
-		gl.glEnd();
-//		myTerrain.draw(gl);
+		myTerrain.draw(gl);
 		// draw trees
 		List<Tree> trees = myTerrain.trees();
 		for (Tree t : trees) {
@@ -265,7 +241,9 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		List<Road> roads = myTerrain.roads();
 		for (Road r : roads) {
 			r.setTextures(myTextures[Model.Road.ordinal()]);
-			r.drawRoad(gl);
+//			int counter = 0;
+//			r.drawRoad(gl, counter);
+			r.draw(gl);
 		}
 
 	}
@@ -309,16 +287,16 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		case KeyEvent.VK_U:
 			sun.up();
 			break;
-//		case KeyEvent.VK_Q:
-//			if (camera.isFollow()) {
-//				camera.leftAngleAroundPerson();
-//			}
-//			break;
-//		case KeyEvent.VK_E:
-//			if (camera.isFollow()) {
-//				camera.rightAngleAroundPerson();
-//			}
-//			break;
+		// case KeyEvent.VK_Q:
+		// if (camera.isFollow()) {
+		// camera.leftAngleAroundPerson();
+		// }
+		// break;
+		// case KeyEvent.VK_E:
+		// if (camera.isFollow()) {
+		// camera.rightAngleAroundPerson();
+		// }
+		// break;
 		case KeyEvent.VK_SPACE:
 			camera.setFollow();
 			break;
