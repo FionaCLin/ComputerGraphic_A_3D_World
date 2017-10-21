@@ -9,22 +9,32 @@ import com.jogamp.opengl.util.gl2.GLUT;
 import ass2.spec.Game.Model;
 
 public class Sun {
-	private double[] myPos;
-	private double angle;
+	// terrain center is x/2, z/2
+	private double[] terrain_centre;
+	private double angle = 0;
+	private static double interval = 180 / 11;
 
-	public Sun() {
-
+	public Sun(double[] pos) {
+		terrain_centre = pos;
 	}
 
 	public void drawSun(GL2 gl, GLUT glut) {
 		gl.glPushMatrix();
-		// shift along x = - 3*terrain.x
-		gl.glTranslated(-20, 0, 0);
-		// rotate aroung x = terrain.z / 2
+		gl.glRotated(angle, 0, 0, terrain_centre[2]);
+
+		// shift along sun.x = - 4*terrain.x
+		gl.glTranslated(-2 * terrain_centre[0], 0, -10);
+		// rotate an angel around z = terrain.z / 2 axie,
+
 		glut.glutSolidSphere(1.0, 20, 20);
 		gl.glPopMatrix();
 
 	}
+
 	// set the rotate angle
+	public void up() {
+		angle = (angle - interval) % 180;
+		System.out.println("sun angle " + angle + " interval " + interval);
+	}
 
 }
