@@ -1,8 +1,27 @@
 package ass2.spec;
 
 import java.awt.Dimension;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.jogamp.common.nio.Buffers;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GLAutoDrawable;
+
+import javax.swing.JFrame;
+
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.awt.GLJPanel;
+import com.jogamp.opengl.util.FPSAnimator;
+import java.awt.Point;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 
 /**
  * COMMENT: Comment HeightMap
@@ -16,6 +35,27 @@ public class Terrain {
 	private List<Tree> myTrees;
 	private List<Road> myRoads;
 	private float[] mySunlight;
+	// terrain size range (10, 20)
+
+	// VBO
+
+	private int numFace;
+	private int maxVertices;
+
+	private FloatBuffer verticesBuffer;
+	private FloatBuffer normalsBuffer;
+	private FloatBuffer texBuffer;
+	private int bufferIds[] = new int[1];
+
+	// Variables needed for using our shaders
+	private static final String VERTEX_SHADER = "src/ass2/spec/VertexTex.glsl";
+	private static final String FRAGMENT_SHADER = "src/ass2/spec/FragmentTex.glsl";
+
+	private int texUnitLoc;
+
+	private int shaderprogram;
+
+	private static final float[] texCoords = { 0, 0, 1, 0, 1, 1 };
 
 	/**
 	 * Create a new terrain
@@ -31,6 +71,13 @@ public class Terrain {
 		myTrees = new ArrayList<Tree>();
 		myRoads = new ArrayList<Road>();
 		mySunlight = new float[3];
+
+		// set up the buffer size (VBO)
+		maxVertices = (int) ((mySize.getHeight() - 1) * (mySize.getWidth() - 1) * 6);
+		verticesBuffer = FloatBuffer.allocate(maxVertices * 3);
+		normalsBuffer = FloatBuffer.allocate(maxVertices);
+		texBuffer = Buffers.newDirectFloatBuffer(texCoords);
+
 	}
 
 	public Terrain(Dimension size) {
@@ -113,7 +160,6 @@ public class Terrain {
 	 * Get the altitude at an arbitrary point. Non-integer points should be
 	 * interpolated from neighbouring grid points
 	 * 
-	 * TO BE COMPLETED
 	 * 
 	 * @param x
 	 * @param z
@@ -123,21 +169,25 @@ public class Terrain {
 		double altitude = 0;
 		int x1 = (int) x;
 		int z1 = (int) z;
-		if (x1 < mySize.getWidth() - 1 && z1 < mySize.getHeight() - 1
-			&& !(x1 == mySize.getWidth() - 1 || z1 == mySize.getHeight() - 1)) {
-				// A==> vertex {x1, this.myAltitued[x1][z1],z1}
-				// B==> vertex {x1, this.myAltitued[x1][z1+1],z1+1}
-				double ya = interpolate(z1, z, z1 + 1, this.myAltitude[x1][z1], this.myAltitude[x1][z1 + 1]);
-				// new vertex { x1, ya, z}
 
-				// A==> vertex {x2, this.myAltitued[x2][z1],z1}
-				// C==> vertex {x2, this.myAltitued[x2][z1+1],z1+1}
-				double yb = interpolate(z1, z, z1 + 1, this.myAltitude[x1 + 1][z1], this.myAltitude[x1 + 1][z1 + 1]);
-				// new vertex {x2, yb, z}
+		if (x1 == mySize.getWidth() - 1 || z1 == mySize.getHeight() - 1){
+			System.out.println(">>>>>>>>>>>>>>>>> Add more calculation");
+		}
+		if (x1 < mySize.getWidth() - 1 && z1 < mySize.getHeight() - 1){
+			// Problem index out of bond when it hits the largest conner
+			// A==> vertex {x1, this.myAltitued[x1][z1],z1}
+			// B==> vertex {x1, this.myAltitued[x1][z1+1],z1+1}
+			double ya = interpolate(z1, z, z1 + 1, this.myAltitude[x1][z1], this.myAltitude[x1][z1 + 1]);
+			// new vertex { x1, ya, z}
 
-				// new vertex { x1, ya, z}
-				// new vertex {x2, yb, z}
-				altitude = interpolate(x1, x, x1 + 1, ya, yb);
+			// A==> vertex {x2, this.myAltitued[x2][z1],z1}
+			// C==> vertex {x2, this.myAltitued[x2][z1+1],z1+1}
+			double yb = interpolate(z1, z, z1 + 1, this.myAltitude[x1 + 1][z1], this.myAltitude[x1 + 1][z1 + 1]);
+			// new vertex {x2, yb, z}
+
+			// new vertex { x1, ya, z}
+			// new vertex {x2, yb, z}
+			altitude = interpolate(x1, x, x1 + 1, ya, yb);
 		}
 		return altitude;
 	}
@@ -178,13 +228,6 @@ public class Terrain {
 		double[][][] verties = new double[(w - 1) * (d - 1) * 2][4][4];
 		for (int x = 0; x < w - 1; x++) {
 			for (int z = 0; z < d - 1; z++) {
-				// (0,0,0)
-				// +
-				// |\
-				// | | \
-				// V | \
-				// +---+
-				// (0,0,1)->
 				double[] vertexa = { x, this.myAltitude[x][z], z, 1 };
 				verties[i][0] = vertexa;
 				double[] vertexb = { x, this.myAltitude[x][z + 1], z + 1, 1 };
@@ -194,22 +237,106 @@ public class Terrain {
 				double[] normal1 = normal(vertexa, vertexb, vertexc);
 				verties[i++][3] = normal1;
 
-				// (0,0,0) <- (1,0.5,0)
-				// +---+
-				// \ | ^
-				// \ | |
-				// \|
-				// +
-				// (1,0.3,1)
 				double[] vertexd = { x + 1, this.myAltitude[x + 1][z], z, 1 };
 				verties[i][0] = vertexc;
 				verties[i][1] = vertexd;
 				verties[i][2] = vertexa;
 				double[] normal2 = normal(vertexc, vertexd, vertexa);
 				verties[i++][3] = normal2;
+				numFace += 2;
 			}
 		}
 		return verties;
+	}
+
+	public void generateBuffers(GL2 gl) {
+
+		generateData();
+
+		// Generate 1 VBO buffer and get its ID
+		gl.glGenBuffers(1, bufferIds, 0);
+
+		// This buffer is now the current array buffer
+		// array buffers hold vertex attribute data
+		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, bufferIds[0]);
+		int size = maxVertices * 3 * Float.BYTES + maxVertices * Float.BYTES + texCoords.length * Float.BYTES;
+		gl.glBufferData(GL2.GL_ARRAY_BUFFER, size, null, GL2.GL_STATIC_DRAW);
+		size = maxVertices * 3 * Float.BYTES;
+		gl.glBufferSubData(GL2.GL_ARRAY_BUFFER, 0, maxVertices * 3 * Float.BYTES, verticesBuffer);
+		size = maxVertices * Float.BYTES;
+		gl.glBufferSubData(GL2.GL_ARRAY_BUFFER, maxVertices * 3 * Float.BYTES, maxVertices * Float.BYTES,
+				normalsBuffer);
+		size = texCoords.length * Float.BYTES;
+		gl.glBufferSubData(GL2.GL_ARRAY_BUFFER, maxVertices * 4 * Float.BYTES, texCoords.length * Float.BYTES, texBuffer);
+
+	}
+
+	private void generateData() {
+
+		double[][][] verties = vertex_mesh();
+
+		for (int i = 0; i < verties.length; i++) {
+			double[] normal = verties[i][3];
+			// System.out.println(normal[0] + " " + normal[1] + " " +
+			// normal[2]);
+			normalsBuffer.put((float) normal[0]);
+			normalsBuffer.put((float) normal[1]);
+			normalsBuffer.put((float) normal[2]);
+			for (int j = 0; j < 3; j++) {
+				double[] vertex = verties[i][j];
+				// myTextures[getTexId()].draw(gl, j);
+				// double[] textCoord = { 0, 0, 1, 0, 1, 1 };
+				// gl.glTexCoord2d(textCoord[j * 2], textCoord[j * 2 + 1]);
+				verticesBuffer.put((float) vertex[0]);
+				verticesBuffer.put((float) vertex[1]);
+				verticesBuffer.put((float) vertex[2]);
+			}
+		}
+		verticesBuffer.rewind();
+		normalsBuffer.rewind();
+	}
+
+	public void draw(GL2 gl) {
+		   
+        //Use the shader.
+        gl.glUseProgram(shaderprogram);
+        //Tell the shader that our texUnit is the 0th one 
+        //Since we are only using 1 texture it is texture 0
+        gl.glUniform1i(texUnitLoc , 0);
+       
+    
+        
+		generateBuffers(gl);
+		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, bufferIds[0]);
+
+		// Enable two vertex arrays: co-ordinates and color.
+		gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+		gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
+		 gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
+
+		// Specify locations for the co-ordinates and color arrays.
+		gl.glVertexPointer(3, GL.GL_FLOAT, 0, 0); // last num is the offset
+		gl.glNormalPointer(GL.GL_FLOAT, 0, maxVertices * 3 * Float.BYTES);
+	  	gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, maxVertices * 3 * Float.BYTES);
+	    
+		// gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, vertices.length*4);
+
+		for (int i = 0; i < numFace; i++) {
+			gl.glDrawArrays(GL2.GL_TRIANGLES, i * 6, 6);
+		}
+
+		gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_FILL);
+		// Disable these. Not needed in this example, but good practice.
+		gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
+		gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
+		// Unbind the buffer.
+		// This is not needed in this simple example but good practice
+		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
+	}
+
+	public void dispose(GL2 gl) {
+
+		gl.glDeleteBuffers(1, bufferIds, 0);
 	}
 
 	/*
@@ -259,4 +386,5 @@ public class Terrain {
 
 		return u;
 	}
+
 }
