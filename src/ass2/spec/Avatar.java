@@ -11,8 +11,11 @@ import ass2.spec.Game.Model;
 public class Avatar {
 	private double[] myPos;
 	private Texture myTextures[] = new Texture[2];
-//	private double step =.1;
-	private double angle = 0;
+	private float handSwing = .3f;
+	private double angle = 0; 
+	private double h_angle = 0; 
+	
+
 	public Avatar(double x, double y, double z, Texture face, Texture body) {
 		myPos = new double[3];
 		myPos[0] = x;
@@ -23,7 +26,6 @@ public class Avatar {
 	}
 
 	public void drawAvatar(GL2 gl, GLUT glut) {
-		
 		
 		gl.glPushMatrix();
 		// Turn on OpenGL texturing.
@@ -39,20 +41,47 @@ public class Avatar {
 			
 			// draw body
 			gl.glPushMatrix();
+			
+				// draw ears
+				gl.glRotated(-angle, 0, 1, 0);	
+	        	gl.glPushMatrix();
+	        	
+					gl.glTranslated(-.5, .5, 0);
+					gl.glRotated(150, -1, 1, 1);
+					gl.glColor3f(102f / 255, 51f / 255, 0);
+					glu.gluQuadricTexture(quadric, true);
+		            glu.gluQuadricNormals(quadric, GLU.GLU_SMOOTH);
+					glu.gluCylinder(quadric, .5, 0, 1, 36, 36);
+				gl.glPopMatrix();				
+				gl.glPushMatrix();
+	
+					gl.glTranslated(.5, .5, 0);
+					gl.glRotated(-150, 1, 1, 1);
+					gl.glColor3f(102f / 255, 51f / 255, 0);
+					glu.gluQuadricTexture(quadric, true);
+		            glu.gluQuadricNormals(quadric, GLU.GLU_SMOOTH);
+		            glu.gluCylinder(quadric, .5, 0, 1, 36, 36);
+					
+				gl.glPopMatrix();
+	            
 				gl.glTranslated(0, -.5, 0);
+//				gl.glBindTexture(GL.GL_TEXTURE_2D, myTextures[1].getTextureId());
+
 				gl.glRotated(90, 1, 0, 0);
 		
 				gl.glColor3f(102f / 255, 51f / 255, 0);
 				glu.gluQuadricTexture(quadric, true);
 	            glu.gluQuadricNormals(quadric, GLU.GLU_SMOOTH);
-				glu.gluCylinder(quadric,.5,.5,2, 20, 20);
+				glu.gluCylinder(quadric,.5,.5, 2, 20, 20);
+
+//				
 			gl.glPopMatrix();
 			gl.glPushMatrix();
-				gl.glRotated(-90, 1, 0, 0);
-				gl.glRotated(angle, 0, 0, 1);
+				gl.glRotated(90, 1, 0, 0);
+				gl.glRotated(180, 0, 1, 0);
+				gl.glRotated(-angle, 0, 0, 1);
 				//draw face
 				gl.glPushMatrix();
-	
 				// bind the texture
 				gl.glBindTexture(GL.GL_TEXTURE_2D, myTextures[0].getTextureId());
 	            
@@ -65,10 +94,10 @@ public class Avatar {
 				gl.glBindTexture(GL.GL_TEXTURE_2D, myTextures[1].getTextureId());
 				gl.glPopMatrix();				
 				
-				// draw ears
+				// draw hands
 	        	gl.glPushMatrix();
 	        	
-					gl.glTranslated(-.75, .85, 0);
+					gl.glTranslated(-.65, handSwing, -1.25);
 					gl.glRotated(90, 1, 0, 0);
 					gl.glColor3f(102f / 255, 51f / 255, 0);
 					glu.gluQuadricTexture(quadric, true);
@@ -77,8 +106,8 @@ public class Avatar {
 				
 				gl.glPopMatrix();				
 				gl.glPushMatrix();
-	
-					gl.glTranslated(.75, .85, 0);
+
+					gl.glTranslated(.65, -handSwing, -1.25);	
 					gl.glRotated(90, 1, 0, 0);
 					gl.glColor3f(102f / 255, 51f / 255, 0);
 					glu.gluQuadricTexture(quadric, true);
@@ -86,6 +115,29 @@ public class Avatar {
 		            glu.gluSphere(quadric,.5, 10, 10);
 					
 				gl.glPopMatrix();
+
+				// draw legs
+	        	gl.glPushMatrix();
+	        	
+					gl.glTranslated(-.65, -handSwing, -2.5);
+					gl.glRotated(90, 1, 0, 0);
+					gl.glColor3f(102f / 255, 51f / 255, 0);
+					glu.gluQuadricTexture(quadric, true);
+		            glu.gluQuadricNormals(quadric, GLU.GLU_SMOOTH);
+					glu.gluSphere(quadric,.5, 10, 10);
+				
+				gl.glPopMatrix();				
+				gl.glPushMatrix();
+
+					gl.glTranslated(.65, handSwing, -2.5);	
+					gl.glRotated(90, 1, 0, 0);
+					gl.glColor3f(102f / 255, 51f / 255, 0);
+					glu.gluQuadricTexture(quadric, true);
+		            glu.gluQuadricNormals(quadric, GLU.GLU_SMOOTH);
+		            glu.gluSphere(quadric,.5, 10, 10);
+					
+				gl.glPopMatrix();
+
 			gl.glPopMatrix();
 
 		gl.glPopMatrix();
@@ -103,39 +155,13 @@ public class Avatar {
 	 * @param myPos
 	 *            the myPos to set
 	 */
-	public void setMyPos(double[] myPos) {
+	public void setMyPos(double[] myPos, double angle) {
 		this.myPos = myPos;
+		this.angle = angle;
+		swing();
 		System.out.println(myPos[0] + " x " + myPos[1]+" y "+myPos[2]+" z");
 	}
-
-//	public void up(double height) {
-//		double dirx = Math.sin(Math.toRadians(angle));
-//		double dirz = -Math.cos(Math.toRadians(angle));
-//		myPos[0] -= dirx * step;
-//		myPos[1] = height;
-//		myPos[2] -= dirx * step;
-//		System.out.println(" angle "+angle + myPos[0] + " x " + myPos[1]+" y "+myPos[2]+" z");
-//	}
-//
-//	public void down(double height) {
-//		double dirx = Math.sin(Math.toRadians(angle));
-//		double dirz = -Math.cos(Math.toRadians(angle));
-//		myPos[0] += dirx * step;
-//		myPos[1] = height;
-//		myPos[2] += dirx * step;
-//		System.out.println(" angle "+angle +myPos[0] + " x " + myPos[1]+" y "+myPos[2]+" z");
-//	}
-//
-	//head rotation
-	public void left() {
-		if( angle > -45)
-			angle  = (angle - 10) % 360;
-		System.out.println(angle + " angle " + myPos[0] + " x "+myPos[1]+" y "+myPos[2]+" z");
-	}
-
-	public void right() {
-		if (angle < 45)
-			angle = (angle + 10) % 360;
-		System.out.println(angle + " angle " + myPos[0] + " x "+myPos[1]+" y "+myPos[2]+" z");
+	public void swing(){
+		handSwing = - handSwing;
 	}
 }
