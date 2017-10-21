@@ -105,13 +105,16 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 
-		// setUpLighting(gl);
+
+		setUpLighting(gl, .8f, .5f, .5f, 80f);
+
 
 		gl.glLoadIdentity();
 		camera.setCamera(myTerrain);
 
 		float[] pos = myTerrain.getSunlight();
 		float[] lightpos = { pos[0], pos[1], pos[2], 0 };
+		
 		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, lightpos, 0);
 
 		// use the texture to modulate diffuse and ambient lighting
@@ -126,7 +129,6 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 		GLUT glut = new GLUT();
 		sun.drawSun(gl, glut);
-		// glut.glutSolidSphere(1.0, 20, 20);
 //		if (camera.isFollow())
 		person.drawAvatar(gl, glut);
 
@@ -151,9 +153,9 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 		gl.glEnable(GL2.GL_LIGHTING);
 		gl.glEnable(GL2.GL_LIGHT0);
-
-		setUpLighting(gl, .5f);
-
+//
+//		setUpLighting(gl, .8f);
+//
 		// Turn on OpenGL texturing.
 		gl.glEnable(GL2.GL_TEXTURE_2D);
 
@@ -174,7 +176,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		camera.setPerson(person);
 	}
 
-	public void setUpLighting(GL2 gl, float ambi) {
+	public void setUpLighting(GL2 gl, float ambi, float diff, float spec, float shin) {
 
 		gl.glEnable(GL2.GL_LIGHTING);
 		// When you enable lighting you must still actually
@@ -183,9 +185,9 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		// material parameter set for metallic gold or brass
 
 		float ambient[] = { ambi, ambi, ambi, 1.0f };
-		float diffuse[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-		float specular[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-		float shininess = 50f;
+		float diffuse[] = { diff, diff, diff, 1.0f };
+		float specular[] = { spec, spec, spec, 1.0f };
+		float shininess = shin;
 
 		// gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_TRUE);
 		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT, ambient, 0);
