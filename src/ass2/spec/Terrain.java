@@ -9,6 +9,7 @@ import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 
+
 /**
  * COMMENT: Comment HeightMap
  *
@@ -21,6 +22,7 @@ public class Terrain {
 	private List<Tree> myTrees;
 	private List<Road> myRoads;
 	private float[] mySunlight;
+	private Texture myTexture;
 	// terrain size range (10, 20)
 
 	// VBO
@@ -32,6 +34,14 @@ public class Terrain {
 	private FloatBuffer normalsBuffer;
 	private FloatBuffer texBuffer;
 	private int bufferIds[] = new int[1];
+
+	// Variables needed for using our shaders
+	private static final String VERTEX_SHADER = "src/ass2/spec/VertexTex.glsl";
+	private static final String FRAGMENT_SHADER = "src/ass2/spec/FragmentTex.glsl";
+	private int texUnitLoc;
+
+	private int shaderprogram;
+	private float[] texCoords = { 0, 0, 1, 0, 1, 1 };
 
 	/**
 	 * Create a new terrain
@@ -51,7 +61,8 @@ public class Terrain {
 		// set up the buffer size (VBO)
 		maxVertices = (int) ((mySize.getHeight() - 1) * (mySize.getWidth() - 1) * 6);
 		verticesBuffer = FloatBuffer.allocate(maxVertices * 3);
-		normalsBuffer = FloatBuffer.allocate(maxVertices);
+		normalsBuffer = FloatBuffer.allocate(maxVertices * 3);
+		texBuffer = FloatBuffer.allocate(maxVertices * 2);
 
 	}
 
@@ -145,8 +156,7 @@ public class Terrain {
 		int x1 = (int) x;
 		int z1 = (int) z;
 
-		if ((x1 < mySize.getWidth() - 1 && z1 < mySize.getHeight() - 1) && 
-			(x1 > 0 && z1 > 0)) {
+		if ((x1 < mySize.getWidth() - 1 && z1 < mySize.getHeight() - 1) && (x1 > 0 && z1 > 0)) {
 			// Problem index out of bond when it hits the largest conner
 			// A==> vertex {x1, this.myAltitued[x1][z1],z1}
 			// B==> vertex {x1, this.myAltitued[x1][z1+1],z1+1}
@@ -232,13 +242,14 @@ public class Terrain {
 		// This buffer is now the current array buffer
 		// array buffers hold vertex attribute data
 		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, bufferIds[0]);
-		int size = maxVertices * 3 * Float.BYTES+ maxVertices * Float.BYTES; //+ maxVertices * Float.BYTES + ;
+		int size = maxVertices * 8 * Float.BYTES;
 		gl.glBufferData(GL2.GL_ARRAY_BUFFER, size, null, GL2.GL_STATIC_DRAW);
 		size = maxVertices * 3 * Float.BYTES;
 		gl.glBufferSubData(GL2.GL_ARRAY_BUFFER, 0, maxVertices * 3 * Float.BYTES, verticesBuffer);
 		size = maxVertices * Float.BYTES;
 		gl.glBufferSubData(GL2.GL_ARRAY_BUFFER, maxVertices * 3 * Float.BYTES, maxVertices * Float.BYTES,
 				normalsBuffer);
+		gl.glBufferSubData(GL.GL_ARRAY_BUFFER, maxVertices * 6 * Float.BYTES, maxVertices * 2 * Float.BYTES, texBuffer);
 
 	}
 
@@ -248,12 +259,14 @@ public class Terrain {
 
 		for (int i = 0; i < verties.length; i++) {
 			double[] normal = verties[i][3];
-			// System.out.println(normal[0] + " " + normal[1] + " " +
-			// normal[2]);
-			normalsBuffer.put((float) normal[0]);
-			normalsBuffer.put((float) normal[1]);
-			normalsBuffer.put((float) normal[2]);
+
 			for (int j = 0; j < 3; j++) {
+				float[] textCoord = { texCoords[j * 2], texCoords[j * 2 + 1] };
+				texBuffer.put(textCoord[0]);
+				texBuffer.put(textCoord[1]);
+				normalsBuffer.put((float) normal[0]);
+				normalsBuffer.put((float) normal[1]);
+				normalsBuffer.put((float) normal[2]);
 				double[] vertex = verties[i][j];
 				verticesBuffer.put((float) vertex[0]);
 				verticesBuffer.put((float) vertex[1]);
@@ -261,28 +274,45 @@ public class Terrain {
 			}
 		}
 		verticesBuffer.rewind();
+		texBuffer.rewind();
 		normalsBuffer.rewind();
 	}
 
 	public void draw(GL2 gl) {
 
-	
-
 		generateBuffers(gl);
 		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, bufferIds[0]);
 
+		try {
+			shaderprogram = Shader.initShaders(gl, VERTEX_SHADER, FRAGMENT_SHADER);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		texUnitLoc = gl.glGetUniformLocation(shaderprogram, "texUnit");
+
+		//Use the shader.
+        gl.glUseProgram(shaderprogram);
+        //Tell the shader that our texUnit is the 0th one 
+        //Since we are only using 1 texture it is texture 0
+        gl.glUniform1i(texUnitLoc , 0);
+      
+		
+		
 		// Enable two vertex arrays: co-ordinates and color.
 		gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
 		gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
+		gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
 
+	
 		// Specify locations for the co-ordinates and color arrays.
 		gl.glVertexPointer(3, GL.GL_FLOAT, 0, 0); // last num is the offset
 		gl.glNormalPointer(GL.GL_FLOAT, 0, maxVertices * 3 * Float.BYTES);
-
-		for (int i = 0; i < numFace; i++) {
-			gl.glDrawArrays(GL2.GL_TRIANGLES, i * 6, 6);
-		}
-
+		gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, maxVertices * 6 * Float.BYTES);
+	    
+		
+		gl.glDrawArrays(GL2.GL_TRIANGLES, 0, maxVertices);
 		gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_FILL);
 		// Disable these. Not needed in this example, but good practice.
 		gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
@@ -343,6 +373,13 @@ public class Terrain {
 		}
 
 		return u;
+	}
+
+	/**
+	 * @param myTexture the myTexture to set
+	 */
+	public void setMyTexture(Texture myTexture) {
+		this.myTexture = myTexture;
 	}
 
 }
