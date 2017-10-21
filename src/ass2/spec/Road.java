@@ -168,6 +168,11 @@ public class Road {
 		gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL2.GL_NICEST);
 		gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_REPLACE);
 
+		//enable polygon offset for filled polygons
+		gl.glEnable(GL2.GL_POLYGON_OFFSET_FILL);
+		//push this polygon to the front a little
+		gl.glPolygonOffset(-1,-1);
+
 		gl.glPushMatrix();
 		{
 			gl.glBegin(GL2.GL_QUAD_STRIP);
@@ -220,6 +225,7 @@ public class Road {
 			gl.glEnd();
 		}
 		gl.glPopMatrix();
+		gl.glDisable(GL2.GL_POLYGON_OFFSET_FILL);
 
 	}
 
