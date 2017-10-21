@@ -53,7 +53,8 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		super("Assignment 2");
 		myTerrain = terrain;
 		camera = new Camera();
-		sun = new Sun();
+		double [] centre = {terrain.size().getWidth(),0,terrain.size().getHeight()};
+		sun = new Sun(centre);
 	}
 
 	/**
@@ -107,7 +108,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		// setUpLighting(gl);
 
 		gl.glLoadIdentity();
-		camera.setCamera();
+		camera.setCamera(myTerrain);
 
 		float[] pos = myTerrain.getSunlight();
 		float[] lightpos = { pos[0], pos[1], pos[2], 0 };
@@ -293,24 +294,29 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 			break;
 		case KeyEvent.VK_A:
 			if (camera.isFollow()) {
-				camera.left();
+				h = myTerrain.altitude(pos[0], pos[2]);
+				camera.left(h);
 			}
 			break;
 		case KeyEvent.VK_D:
 			if (camera.isFollow()) {
-				camera.right();
+				h = myTerrain.altitude(pos[0], pos[2]);
+				camera.right(h);
 			}
 			break;
-		case KeyEvent.VK_Q:
-			if (camera.isFollow()) {
-				camera.leftAngleAroundPerson();
-			}
+		case KeyEvent.VK_U:
+			sun.up();
 			break;
-		case KeyEvent.VK_E:
-			if (camera.isFollow()) {
-				camera.rightAngleAroundPerson();
-			}
-			break;
+//		case KeyEvent.VK_Q:
+//			if (camera.isFollow()) {
+//				camera.leftAngleAroundPerson();
+//			}
+//			break;
+//		case KeyEvent.VK_E:
+//			if (camera.isFollow()) {
+//				camera.rightAngleAroundPerson();
+//			}
+//			break;
 		case KeyEvent.VK_SPACE:
 			camera.setFollow();
 			break;
@@ -330,13 +336,13 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 			break;
 		case KeyEvent.VK_RIGHT:
 			if (!camera.isFollow()) {
-				camera.right();
+				camera.right(h);
 			}
 
 			break;
 		case KeyEvent.VK_LEFT:
 			if (!camera.isFollow()) {
-				camera.left();
+				camera.left(h);
 			}
 			break;
 		case KeyEvent.VK_C:
