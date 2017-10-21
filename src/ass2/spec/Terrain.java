@@ -170,10 +170,30 @@ public class Terrain {
 		int x1 = (int) x;
 		int z1 = (int) z;
 
-		if (x1 == mySize.getWidth() - 1 || z1 == mySize.getHeight() - 1){
-			System.out.println(">>>>>>>>>>>>>>>>> Add more calculation");
-		}
-		if (x1 < mySize.getWidth() - 1 && z1 < mySize.getHeight() - 1){
+//		if (x1 == mySize.getWidth() - 1) {
+//
+//			System.out.println(">>>>>>>>>>>>>>>>> Add more calculation");
+//
+//		}
+//		if (z1 == mySize.getHeight() - 1 && x1 == mySize.getWidth() - 1) {
+//			// Problem index out of bond when it hits the largest conner
+//			// A==> vertex {x1, this.myAltitued[x1][z1],z1}
+//			// B==> vertex {x1, this.myAltitued[x1][z1+1],z1+1}
+//			double ya = interpolate(z1 - 1, z, z1, this.myAltitude[x1][z1 - 1], this.myAltitude[x1][z1]);
+//			// new vertex { x1, ya, z}
+//
+//			// A==> vertex {x2, this.myAltitued[x2][z1],z1}
+//			// C==> vertex {x2, this.myAltitued[x2][z1+1],z1+1}
+//			double yb = interpolate(z1 - 1, z, z1, this.myAltitude[x1 - 1][z1 - 1], this.myAltitude[x1][z1]);
+//			// new vertex {x2, yb, z}
+//
+//			// new vertex { x1, ya, z}
+//			// new vertex {x2, yb, z}
+//			altitude = interpolate(x1-1, x, x1, ya, yb);
+//
+//		}
+		if ((x1 < mySize.getWidth() - 1 && z1 < mySize.getHeight() - 1) && 
+			(x1 > 0 && z1 > 0)) {
 			// Problem index out of bond when it hits the largest conner
 			// A==> vertex {x1, this.myAltitued[x1][z1],z1}
 			// B==> vertex {x1, this.myAltitued[x1][z1+1],z1+1}
@@ -267,7 +287,8 @@ public class Terrain {
 		gl.glBufferSubData(GL2.GL_ARRAY_BUFFER, maxVertices * 3 * Float.BYTES, maxVertices * Float.BYTES,
 				normalsBuffer);
 		size = texCoords.length * Float.BYTES;
-		gl.glBufferSubData(GL2.GL_ARRAY_BUFFER, maxVertices * 4 * Float.BYTES, texCoords.length * Float.BYTES, texBuffer);
+		gl.glBufferSubData(GL2.GL_ARRAY_BUFFER, maxVertices * 4 * Float.BYTES, texCoords.length * Float.BYTES,
+				texBuffer);
 
 	}
 
@@ -297,28 +318,26 @@ public class Terrain {
 	}
 
 	public void draw(GL2 gl) {
-		   
-        //Use the shader.
-        gl.glUseProgram(shaderprogram);
-        //Tell the shader that our texUnit is the 0th one 
-        //Since we are only using 1 texture it is texture 0
-        gl.glUniform1i(texUnitLoc , 0);
-       
-    
-        
+
+		// Use the shader.
+		gl.glUseProgram(shaderprogram);
+		// Tell the shader that our texUnit is the 0th one
+		// Since we are only using 1 texture it is texture 0
+		gl.glUniform1i(texUnitLoc, 0);
+
 		generateBuffers(gl);
 		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, bufferIds[0]);
 
 		// Enable two vertex arrays: co-ordinates and color.
 		gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
 		gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
-		 gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
+		gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
 
 		// Specify locations for the co-ordinates and color arrays.
 		gl.glVertexPointer(3, GL.GL_FLOAT, 0, 0); // last num is the offset
 		gl.glNormalPointer(GL.GL_FLOAT, 0, maxVertices * 3 * Float.BYTES);
-	  	gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, maxVertices * 3 * Float.BYTES);
-	    
+		gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, maxVertices * 3 * Float.BYTES);
+
 		// gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, vertices.length*4);
 
 		for (int i = 0; i < numFace; i++) {
