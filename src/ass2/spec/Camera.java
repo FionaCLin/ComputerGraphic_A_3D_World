@@ -12,7 +12,7 @@ public class Camera {
 	private double cameraz;
 	private Avatar person;
 	private double step = .1;
-	private double dstAbovePerson = 2;
+	private double dstAbovePerson = 3;
 	private double dstAwayPerson = 6;
 	private double angleAroundPerson = 10;
 	private boolean isfollow;
@@ -72,8 +72,10 @@ public class Camera {
 
 	public void setCamera() {
 		GLU glu = new GLU();
-		double[] eyes = { person.getMyPos()[0], person.getMyPos()[1], person.getMyPos()[2] };
+		// double[] eyes = { person.getMyPos()[0], person.getMyPos()[1],
+		// person.getMyPos()[2] };
 		double[] centre = { 5, 0, 5 };
+		double[] eyes = { 5, 0, 15 };
 		// double [] eyes = person.getMyPos();
 		// double [] centre = person.getMyPos();
 
@@ -85,8 +87,8 @@ public class Camera {
 		double[] dir = { 0, 0, 0 };
 
 		if (!isfollow) {
-//			eyes = person.getMyPos();
-			
+			// eyes = person.getMyPos();
+
 			dir[0] = Math.sin(Math.toRadians(angle));
 			dir[1] = 0;
 			dir[2] = -Math.cos(Math.toRadians(angle));
@@ -94,7 +96,8 @@ public class Camera {
 			centre[0] = eyes[0] + dir[0];
 			centre[1] = eyes[1] + dir[1];
 			centre[2] = eyes[2] + dir[2];
-//			cSystem.out.println(" x " + centre[0] + " y " + centre[1] + " z " + centre[2] + " angle " + angle);
+			System.out.println(" x " + centre[0] + " y " + centre[1] + " z " + centre[2] + " angle " + angle);
+
 		} else {
 			// person.getMyPos(); // look at person
 			double[] camera = person.getMyPos(); // look at person
@@ -109,39 +112,49 @@ public class Camera {
 			centre[1] = camera[1] + dir[1];
 			centre[2] = camera[2] + dir[2];
 
-//			System.out.println("xxx" + eyes[0] + " Y " + eyes[1] + " Z " + eyes[2] + angleAroundPerson);
-//			System.out.println(dir[0] + " x " + dir[1] + " y " + dir[2] + " z " + angleAroundPerson + " angle");
-//			System.out.println(
-//					" ####x " + centre[0] + " y " + centre[1] + " z " + centre[2] + " angle " + angleAroundPerson);
+			// System.out.println("xxx" + eyes[0] + " Y " + eyes[1] + " Z " +
+			// eyes[2] + angleAroundPerson);
+			// System.out.println(dir[0] + " x " + dir[1] + " y " + dir[2] + " z
+			// " + angleAroundPerson + " angle");
+			// System.out.println(
+			// " ####x " + centre[0] + " y " + centre[1] + " z " + centre[2] + "
+			// angle " + angleAroundPerson);
 		}
 		// System.out.println(">>>" + angle);
 		glu.gluLookAt(eyes[0], eyes[1], eyes[2], centre[0], centre[1], centre[2], 0.0, 1.0, 0.0);
 	}
 
 	public void up(double h) {
-		person.left(h);
+		
 		double dirx = Math.sin(Math.toRadians(angle));
 		double dirz = -Math.cos(Math.toRadians(angle));
+		cameray = h + 2;
 		camerax += dirx * step;
 		cameraz += dirz * step;
+		double[] pos = { camerax, cameray - 2,  cameraz };
+		person.setMyPos(pos);
+
 	}
 
 	public void down(double h) {
-		person.left(h);
+
 		double dirx = Math.sin(Math.toRadians(angle));
 		double dirz = -Math.cos(Math.toRadians(angle));
-
+		cameray = h + 2;
 		camerax -= dirx * step;
 		cameraz -= dirz * step;
+		double[] pos = { camerax, cameray - 2, cameraz };
+		person.setMyPos(pos);
+
 	}
 
-	public void right(double h) {
-		person.left(h);
+	public void right() {
+		person.right();
 		angle = (angle + 10) % 360;
 	}
 
-	public void left(double h) {
-		person.left(h);
+	public void left() {
+		person.left();
 		angle = (angle - 10) % 360;
 	}
 
@@ -153,10 +166,11 @@ public class Camera {
 		this.person = person;
 		// set min height
 		setCamerax(person.getMyPos()[0]);
-		setCameray(cameray = person.getMyPos()[1] + .5); // set min height
+		setCameray(person.getMyPos()[1] + .5); // set min height
 		setCameraz(person.getMyPos()[2]);
 
 	}
+
 	public void rightAngleAroundPerson() {
 		angleAroundPerson = (angleAroundPerson + 10) % 360;
 	}
