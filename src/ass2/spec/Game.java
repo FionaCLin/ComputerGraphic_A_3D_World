@@ -126,8 +126,8 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		GLUT glut = new GLUT();
 		sun.drawSun(gl, glut);
 		// glut.glutSolidSphere(1.0, 20, 20);
-		if (camera.isFollow())
-			person.drawAvatar(gl, glut);
+//		if (camera.isFollow())
+		person.drawAvatar(gl, glut);
 
 	}
 
@@ -151,7 +151,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		gl.glEnable(GL2.GL_LIGHTING);
 		gl.glEnable(GL2.GL_LIGHT0);
 
-		setUpLighting(gl,.5f);
+		setUpLighting(gl, .5f);
 
 		// Turn on OpenGL texturing.
 		gl.glEnable(GL2.GL_TEXTURE_2D);
@@ -250,7 +250,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 			}
 		}
 		gl.glEnd();
-
+//		myTerrain.draw(gl);
 		// draw trees
 		List<Tree> trees = myTerrain.trees();
 		for (Tree t : trees) {
@@ -281,42 +281,30 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		switch (e.getKeyCode()) {
 		case KeyEvent.VK_W:
 			if (camera.isFollow()) {
-				if (pos[2] > 1)
-					h = myTerrain.altitude(pos[0], pos[2]);
-				person.up(h);
+				h = myTerrain.altitude(pos[0], pos[2]);
+				camera.up(h);
 			}
 			break;
 		case KeyEvent.VK_S:
 			if (camera.isFollow()) {
-				if (pos[2] < myTerrain.size().getWidth() - 1)
-					h = myTerrain.altitude(pos[0], pos[2]);
-				System.out.println("####################");
-				System.out.println("########" + h);
-				person.down(h);
-				System.out.println("########" + h);
-				System.out.println("####################");
-
+				h = myTerrain.altitude(pos[0], pos[2]);
+				camera.down(h);
 			}
 			break;
 		case KeyEvent.VK_A:
 			if (camera.isFollow()) {
-				if (pos[0] > 1)
-					h = myTerrain.altitude(pos[0], pos[2]);
-				person.left(h);
+				camera.left();
 			}
 			break;
 		case KeyEvent.VK_D:
 			if (camera.isFollow()) {
-				if (pos[0] < myTerrain.size().getHeight() - 1)
-					h = myTerrain.altitude(pos[0], pos[2]);
-				person.right(h);
+				camera.right();
 			}
 			break;
 		case KeyEvent.VK_Q:
 			if (camera.isFollow()) {
 				camera.leftAngleAroundPerson();
 			}
-
 			break;
 		case KeyEvent.VK_E:
 			if (camera.isFollow()) {
@@ -330,7 +318,6 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 			if (!camera.isFollow()) {
 				if (pos[2] < myTerrain.size().getWidth() - 1)
 					h = myTerrain.altitude(pos[0], pos[2]);
-				person.up(h);
 				camera.up(h);
 			}
 			break;
@@ -338,25 +325,18 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 			if (!camera.isFollow()) {
 				if (pos[2] < myTerrain.size().getWidth() - 1)
 					h = myTerrain.altitude(pos[0], pos[2]);
-				person.down(h);
 				camera.down(h);
 			}
 			break;
 		case KeyEvent.VK_RIGHT:
 			if (!camera.isFollow()) {
-				if (pos[0] < myTerrain.size().getHeight() - 1)
-					h = myTerrain.altitude(pos[0], pos[2]);
-				person.right(h);
-				camera.right(h);
+				camera.right();
 			}
 
 			break;
 		case KeyEvent.VK_LEFT:
 			if (!camera.isFollow()) {
-				if (pos[0] > 1)
-					h = myTerrain.altitude(pos[0], pos[2]);
-
-				camera.left(h);
+				camera.left();
 			}
 			break;
 		case KeyEvent.VK_C:
