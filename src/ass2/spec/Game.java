@@ -69,10 +69,10 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 	public void updateSun() {
 		hour++;
 		hour %= 12;
-		
-		setUpLighting(gl, (float) (hour / 12.0), .5f, .5f, (float) (hour / 12.0)*10);
+
+		setUpLighting(gl, (float) (hour / 12.0), .5f, .5f, (float) (hour / 12.0) * 10);
 		System.out.println("update sun at " + hour + ":00");
-		System.out.println(" Ambi " + (float) (hour / 12.0)+" shiness "+ (float) (hour / 12.0)*10);
+		System.out.println(" Ambi " + (float) (hour / 12.0) + " shiness " + (float) (hour / 12.0) * 10);
 		sun.up();
 	}
 
@@ -151,11 +151,6 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 
 		draw(gl);
 
-		GLUT glut = new GLUT();
-		sun.drawSun(gl, glut);
-		// if (camera.isFollow())
-		person.drawAvatar(gl, glut);
-
 	}
 
 	@Override
@@ -168,7 +163,7 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 	public void init(GLAutoDrawable drawable) {
 		GL2 gl = drawable.getGL().getGL2();
 		this.gl = gl;
-//		gl.glClearColor(135 / 255f, 206 / 255f, 250 / 255f, 0.5f);
+		gl.glClearColor(135 / 255f, 206 / 255f, 250 / 255f, 0.5f);
 
 		gl.glEnable(GL2.GL_DEPTH_TEST);
 
@@ -224,7 +219,6 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 		gl.glShadeModel(this.isSmooth() ? GL2.GL_SMOOTH : GL2.GL_FLAT);
 
 		if (this.isSpecular()) {
-
 			gl.glLightModeli(GL2.GL_LIGHT_MODEL_COLOR_CONTROL, GL2.GL_SEPARATE_SPECULAR_COLOR);
 		} else {
 			gl.glLightModeli(GL2.GL_LIGHT_MODEL_COLOR_CONTROL, GL2.GL_SINGLE_COLOR);
@@ -248,10 +242,13 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 	}
 
 	private void draw(GL2 gl) {
-		// // draw the Terrian
-		myModel = Model.Terrain;
+		GLUT glut = new GLUT();
+
+		gl.glDisable(GL2.GL_LIGHTING);
+		sun.drawSun(gl, glut);
+		gl.glEnable(GL2.GL_LIGHTING);
+		
 		// // Turn on OpenGL texturing.
-		gl.glEnable(GL2.GL_TEXTURE_2D);
 		// // bind the texture
 		gl.glBindTexture(GL.GL_TEXTURE_2D, myTextures[getTexId()].getTextureId());
 
@@ -271,6 +268,9 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 			// r.drawRoad(gl, counter);
 			r.draw(gl);
 		}
+
+		if (camera.isFollow())
+			person.drawAvatar(gl, glut);
 
 	}
 
