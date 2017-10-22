@@ -9,12 +9,6 @@ import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 
-
-/**
- * COMMENT: Comment HeightMap
- *
- * @author malcolmr
- */
 public class Terrain {
 
 	private Dimension mySize;

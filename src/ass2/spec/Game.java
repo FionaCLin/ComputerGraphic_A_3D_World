@@ -22,11 +22,6 @@ import javax.swing.Timer;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-/**
- * COMMENT: Comment Game
- *
- * @author malcolmr
- */
 public class Game extends JFrame implements ActionListener, GLEventListener, MouseMotionListener, KeyListener {
 	private Timer timer;
 	private GL2 gl;
@@ -65,7 +60,6 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 
 	}
 
-	// this method performs the task
 	public void updateSun() {
 		hour++;
 		hour %= 12;
@@ -132,8 +126,7 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 		GL2 gl = drawable.getGL().getGL2();
 
 		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
-		gl.glClearColor((float)hour/12,(float)hour/12,(float)hour/12,1f);
-		//System.out.println((float)hour/12);
+		gl.glClearColor((float) hour / 12, (float) hour / 12, (float) hour / 12, 1f);
 
 		setUpLighting(gl, .2f, .5f, .5f, 20f);
 
@@ -166,7 +159,7 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 	public void init(GLAutoDrawable drawable) {
 		GL2 gl = drawable.getGL().getGL2();
 		this.gl = gl;
-	//gl.glClearColor(135 / 255f, 206 / 255f, 250 / 255f, 0.5f);
+		gl.glClearColor(135 / 255f, 206 / 255f, 250 / 255f, 0.5f);
 
 		gl.glEnable(GL2.GL_DEPTH_TEST);
 
@@ -175,13 +168,10 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 
 		gl.glEnable(GL2.GL_LIGHTING);
 		gl.glEnable(GL2.GL_LIGHT0);
-		//
-		// setUpLighting(gl, .8f);
-		//
+
 		// Turn on OpenGL texturing.
 		gl.glEnable(GL2.GL_TEXTURE_2D);
 
-		// gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL2.GL_DONT_CARE);
 		gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL2.GL_NICEST);
 		// Load textures
 
@@ -213,7 +203,6 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 		float specular[] = { spec, spec, spec, 1.0f };
 		float shininess = shin;
 
-		// gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_TRUE);
 		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT, ambient, 0);
 		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_DIFFUSE, diffuse, 0);
 		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SPECULAR, specular, 0);
@@ -250,9 +239,9 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 		gl.glDisable(GL2.GL_LIGHTING);
 		sun.drawSun(gl, glut);
 		gl.glEnable(GL2.GL_LIGHTING);
-		
-		// // Turn on OpenGL texturing.
-		// // bind the texture
+
+		// Turn on OpenGL texturing.
+		// bind the texture
 		gl.glBindTexture(GL.GL_TEXTURE_2D, myTextures[getTexId()].getTextureId());
 
 		myTerrain.draw(gl);
@@ -287,7 +276,6 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 	public void keyPressed(KeyEvent e) {
 		double h = 0;
 		double[] pos = person.getMyPos();
-		// TODO Auto-generated method stub
 		switch (e.getKeyCode()) {
 		case KeyEvent.VK_W:
 			if (camera.isFollow()) {
@@ -361,7 +349,6 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 		default:
 			break;
 		}
-		System.out.println(camera.getAngle());
 
 	}
 

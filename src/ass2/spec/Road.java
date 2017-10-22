@@ -227,9 +227,6 @@ public class Road {
 					start = spinePoint;
 				}
 
-//				System.out.println(counter + " counter " + this.size() + " size <<<<<<<" + point(0)[0] + " "
-//						+ point(0)[1] + "<<<<<<<<<<<<<<<<<<<<<");
-
 			}
 			gl.glEnd();
 		}
@@ -265,7 +262,6 @@ public class Road {
 		double rate = 0.5;
 		for (double i = 0.01; i < 1; i += 0.01) {
 			// fix y from getAtitute
-
 			curve_point = point(i);
 			double[][] normals = normal(start, curve_point);
 			normals[0] = normalise(normals[0]);
@@ -274,16 +270,12 @@ public class Road {
 			// get points on x,z coordinate
 			double[] p = getPoint(normals[0], curve_point, rate);
 			double[] q = getPoint(normals[1], curve_point, rate);
-			
+
 			texBuffer.put((float) i);
 			texBuffer.put((float) 0);
 
 			texBuffer.put((float) i);
 			texBuffer.put((float) 1);
-
-
-
-			
 
 			verticesBuffer.put((float) q[0]);
 			verticesBuffer.put((float) y);

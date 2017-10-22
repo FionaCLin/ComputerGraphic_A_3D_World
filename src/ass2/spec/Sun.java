@@ -31,8 +31,6 @@ public class Sun {
 		gl.glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
 		glut.glutSolidSphere(1.0, 20, 20);
 		gl.glPopMatrix();
-		// Spotlight properties including position.
-
 	}
 
 	// set the rotate angle

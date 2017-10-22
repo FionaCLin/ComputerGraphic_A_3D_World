@@ -85,7 +85,6 @@ public class Camera {
 		double[] dir = { 0, 0, 0 };
 
 		if (!isfollow) {
-			// eyes = person.getMyPos();
 
 			dir[0] = Math.sin(Math.toRadians(angle));
 			dir[1] = 0;
@@ -94,14 +93,9 @@ public class Camera {
 			centre[0] = eyes[0] + dir[0];
 			centre[1] = eyes[1] + dir[1];
 			centre[2] = eyes[2] + dir[2];
-//			System.out.println(" x " + centre[0] + " y " + centre[1] + " z " + centre[2] + " angle " + angle);
 
 		} else {
-			// person.getMyPos(); // look at person
 			double[] camera = person.getMyPos(); // look at person
-			// dir[0] = Math.sin(Math.toRadians(angleAroundPerson));
-			// dir[1] = -.5;
-			// dir[2] = Math.cos(Math.toRadians(angleAroundPerson));
 
 			dir[0] = Math.sin(Math.toRadians(-angle));
 			dir[1] = -.5;
@@ -116,15 +110,7 @@ public class Camera {
 			centre[1] = camera[1] + dir[1];
 			centre[2] = camera[2] + dir[2];
 
-			// System.out.println("xxx" + eyes[0] + " Y " + eyes[1] + " Z " +
-			// eyes[2] + angleAroundPerson);
-			// System.out.println(dir[0] + " x " + dir[1] + " y " + dir[2] + " z
-			// " + angleAroundPerson + " angle");
-			// System.out.println(
-			// " ####x " + centre[0] + " y " + centre[1] + " z " + centre[2] + "
-			// angle " + angleAroundPerson);
 		}
-		// System.out.println(">>>" + angle);
 		glu.gluLookAt(eyes[0], eyes[1], eyes[2], centre[0], centre[1], centre[2], 0.0, 1.0, 0.0);
 	}
 
@@ -158,7 +144,6 @@ public class Camera {
 		double[] pos = { camerax, h, cameraz };
 		person.setMyPos(pos, angle);
 	}
-
 	public void left(double h) {
 		h = Math.max(h, cameray - 2);
 		cameray = h + 2;
@@ -173,11 +158,9 @@ public class Camera {
 	 */
 	public void setPerson(Avatar person) {
 		this.person = person;
-		// set min height
 		setCamerax(person.getMyPos()[0]);
 		setCameray(person.getMyPos()[1] + .5); // set min height
 		setCameraz(person.getMyPos()[2]);
-
 	}
 
 	public void rightAngleAroundPerson() {
@@ -186,7 +169,6 @@ public class Camera {
 
 	public void leftAngleAroundPerson() {
 		angleAroundPerson = (angleAroundPerson - 10) % 360;
-
 	}
 
 	public void setFollow() {
@@ -196,5 +178,4 @@ public class Camera {
 	public boolean isFollow() {
 		return isfollow;
 	}
-
 }

@@ -65,7 +65,6 @@ public class Avatar {
 				gl.glPopMatrix();
 	            
 				gl.glTranslated(0, -.5, 0);
-//				gl.glBindTexture(GL.GL_TEXTURE_2D, myTextures[1].getTextureId());
 
 				gl.glRotated(90, 1, 0, 0);
 		
@@ -74,7 +73,6 @@ public class Avatar {
 	            glu.gluQuadricNormals(quadric, GLU.GLU_SMOOTH);
 				glu.gluCylinder(quadric,.5,.5, 2, 20, 20);
 
-//				
 			gl.glPopMatrix();
 			gl.glPushMatrix();
 				gl.glRotated(90, 1, 0, 0);
