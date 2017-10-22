@@ -29,7 +29,8 @@ import com.jogamp.opengl.util.gl2.GLUT;
  */
 public class Game extends JFrame implements ActionListener, GLEventListener, MouseMotionListener, KeyListener {
 	private Timer timer;
-	private int hour;
+	private GL2 gl;
+	private int hour = 6;
 	private Terrain myTerrain;
 	private Avatar person;
 	private Camera camera;
@@ -68,7 +69,10 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 	public void updateSun() {
 		hour++;
 		hour %= 12;
+		
+		setUpLighting(gl, (float) (hour / 12.0), .5f, .5f, (float) (hour / 12.0)*10);
 		System.out.println("update sun at " + hour + ":00");
+		System.out.println(" Ambi " + (float) (hour / 12.0)+" shiness "+ (float) (hour / 12.0)*10);
 		sun.up();
 	}
 
@@ -128,7 +132,7 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 
 		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 
-		setUpLighting(gl, .8f, .5f, .5f, 80f);
+		setUpLighting(gl, .2f, .5f, .5f, 20f);
 
 		gl.glLoadIdentity();
 		camera.setCamera(myTerrain);
@@ -145,7 +149,6 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 			gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_REPLACE);
 		}
 
-		// gl.glColor3f(0, 0.5f, 0);
 		draw(gl);
 
 		GLUT glut = new GLUT();
@@ -164,8 +167,8 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 	@Override
 	public void init(GLAutoDrawable drawable) {
 		GL2 gl = drawable.getGL().getGL2();
-
-		gl.glClearColor(135 / 255f, 206 / 255f, 250 / 255f, 0.5f);
+		this.gl = gl;
+//		gl.glClearColor(135 / 255f, 206 / 255f, 250 / 255f, 0.5f);
 
 		gl.glEnable(GL2.GL_DEPTH_TEST);
 
@@ -350,7 +353,6 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 			break;
 		case KeyEvent.VK_C:
 			if (e.isControlDown()) {
-				timer.stop();
 				System.exit(EXIT_ON_CLOSE);
 			}
 		default:
