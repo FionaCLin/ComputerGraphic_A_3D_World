@@ -18,16 +18,20 @@ public class Sun {
 		terrain_centre = pos;
 	}
 
+	public enum MyColor {
+		RED, ORANGE, YELLOW,
+	}
+
 	public void drawSun(GL2 gl, GLUT glut) {
 		gl.glPushMatrix();
 		gl.glRotated(angle, 0, 0, terrain_centre[2]);
-
 		// shift along sun.x = - 4*terrain.x
 		gl.glTranslated(-2 * terrain_centre[0], 0, -10);
 		// rotate an angel around z = terrain.z / 2 axie,
-
+		gl.glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
 		glut.glutSolidSphere(1.0, 20, 20);
 		gl.glPopMatrix();
+		// Spotlight properties including position.
 
 	}
 
