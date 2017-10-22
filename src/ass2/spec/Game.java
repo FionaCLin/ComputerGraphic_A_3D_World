@@ -1,13 +1,14 @@
 package ass2.spec;
 
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.jogamp.opengl.*;
@@ -16,6 +17,8 @@ import com.jogamp.opengl.glu.GLU;
 
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.Timer;
+
 import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.gl2.GLUT;
 
@@ -24,8 +27,9 @@ import com.jogamp.opengl.util.gl2.GLUT;
  *
  * @author malcolmr
  */
-public class Game extends JFrame implements GLEventListener, MouseMotionListener, KeyListener {
-
+public class Game extends JFrame implements ActionListener, GLEventListener, MouseMotionListener, KeyListener {
+	private Timer timer;
+	private int hour;
 	private Terrain myTerrain;
 	private Avatar person;
 	private Camera camera;
@@ -51,10 +55,21 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 	public Game(Terrain terrain) {
 		super("Assignment 2");
+
 		myTerrain = terrain;
 		camera = new Camera();
+
 		double[] centre = { terrain.size().getWidth(), 0, terrain.size().getHeight() };
 		sun = new Sun(centre);
+
+	}
+
+	// this method performs the task
+	public void updateSun() {
+		hour++;
+		hour %= 12;
+		System.out.println("update sun at " + hour + ":00");
+		sun.up();
 	}
 
 	/**
@@ -96,6 +111,14 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		Terrain terrain = LevelIO.load(new File(args[0]));
 		Game game = new Game(terrain);
 		game.run();
+		Timer timer = new Timer(5000, game);
+
+		timer.start();
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+		}
+
 	}
 
 	@Override
@@ -173,7 +196,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		int centrez = (int) myTerrain.size().getWidth() / 2;
 		person = new Avatar(centrex, myTerrain.altitude(centrex, centrez), centrez, face, fur);
 		camera.setPerson(person);
-		
+
 	}
 
 	public void setUpLighting(GL2 gl, float ambi, float diff, float spec, float shin) {
@@ -241,8 +264,8 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		List<Road> roads = myTerrain.roads();
 		for (Road r : roads) {
 			r.setTextures(myTextures[Model.Road.ordinal()]);
-//			int counter = 0;
-//			r.drawRoad(gl, counter);
+			// int counter = 0;
+			// r.drawRoad(gl, counter);
 			r.draw(gl);
 		}
 
@@ -326,8 +349,10 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 			}
 			break;
 		case KeyEvent.VK_C:
-			if (e.isControlDown())
+			if (e.isControlDown()) {
+				timer.stop();
 				System.exit(EXIT_ON_CLOSE);
+			}
 		default:
 			break;
 		}
@@ -384,5 +409,11 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	public void mouseMoved(MouseEvent e) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		updateSun();
 	}
 }
