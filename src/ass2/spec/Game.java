@@ -68,6 +68,7 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 		System.out.println("update sun at " + hour + ":00");
 		System.out.println(" Ambi " + (float) (hour / 12.0) + " shiness " + (float) (hour / 12.0) * 10);
 		sun.up();
+		sun.setIndex(hour);
 
 	}
 
@@ -126,7 +127,7 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 		GL2 gl = drawable.getGL().getGL2();
 
 		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
-		gl.glClearColor((float) hour / 12, (float) hour / 12, (float) hour / 12, 1f);
+		gl.glClearColor((float) hour / 11, (float) hour / 11, (float) hour / 11, 1f);
 
 		setUpLighting(gl, .2f, .5f, .5f, 20f);
 
@@ -239,6 +240,7 @@ public class Game extends JFrame implements ActionListener, GLEventListener, Mou
 		gl.glDisable(GL2.GL_LIGHTING);
 		sun.drawSun(gl, glut);
 		gl.glEnable(GL2.GL_LIGHTING);
+
 
 		// Turn on OpenGL texturing.
 		// bind the texture
