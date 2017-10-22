@@ -177,7 +177,7 @@ public class Road {
 
 	public void drawRoad(GL2 gl, int counter) {
 
-		double y = myTerrain.altitude(point(0)[0], point(0)[1]) ;
+		double y = myTerrain.altitude(point(0)[0], point(0)[1]);
 
 		// Turn on OpenGL texturing.
 
@@ -227,8 +227,8 @@ public class Road {
 					start = spinePoint;
 				}
 
-				System.out.println(counter + " counter " + this.size() + " size <<<<<<<" + point(0)[0] + " "
-						+ point(0)[1] + "<<<<<<<<<<<<<<<<<<<<<");
+//				System.out.println(counter + " counter " + this.size() + " size <<<<<<<" + point(0)[0] + " "
+//						+ point(0)[1] + "<<<<<<<<<<<<<<<<<<<<<");
 
 			}
 			gl.glEnd();
@@ -274,18 +274,21 @@ public class Road {
 			// get points on x,z coordinate
 			double[] p = getPoint(normals[0], curve_point, rate);
 			double[] q = getPoint(normals[1], curve_point, rate);
-
+			
 			texBuffer.put((float) i);
 			texBuffer.put((float) 0);
+
+			texBuffer.put((float) i);
+			texBuffer.put((float) 1);
+
+
+
+			
 
 			verticesBuffer.put((float) q[0]);
 			verticesBuffer.put((float) y);
 			verticesBuffer.put((float) q[1]);
 
-			texBuffer.put((float) i);
-			texBuffer.put((float) 1);
-
-			curve_point = point(i);
 			verticesBuffer.put((float) p[0]);
 			verticesBuffer.put((float) y);
 			verticesBuffer.put((float) p[1]);
@@ -355,6 +358,7 @@ public class Road {
 		generateBuffers(gl);
 		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, bufferIds[0]);
 
+		// Load textures
 		gl.glEnable(GL2.GL_TEXTURE_2D);
 
 		gl.glBindTexture(GL2.GL_TEXTURE_2D, myTexture.getTextureId());
@@ -381,17 +385,17 @@ public class Road {
 		gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
 		gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
 
-		// enable polygon offset for filled polygons
-		gl.glEnable(GL2.GL_POLYGON_OFFSET_FILL);
-		// push this polygon to the front a little
-		gl.glPolygonOffset(1, 1);
-
 		// Specify locations for the co-ordinates and color arrays.
 		gl.glVertexPointer(3, GL.GL_FLOAT, 0, 0); // last num is the offset
 		gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, maxVertices * 3 * Float.BYTES);
-
-		gl.glDrawArrays(GL2.GL_TRIANGLE_STRIP, 0, maxVertices);
-		gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_FILL);
+		// enable polygon offset for filled polygons
+		gl.glEnable(GL2.GL_POLYGON_OFFSET_FILL);
+		// push this polygon to the front a little
+		gl.glPolygonOffset(-1, -1);
+		for (int i = 0; i < 100; i++) {
+			gl.glDrawArrays(GL2.GL_QUAD_STRIP, i * 2, 4);
+		}
+		gl.glDisable(GL2.GL_POLYGON_OFFSET_FILL);
 		// Disable these. Not needed in this example, but good practice.
 		gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
 		gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
