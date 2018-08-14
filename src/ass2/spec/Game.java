@@ -1,13 +1,14 @@
 package ass2.spec;
 
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.jogamp.opengl.*;
@@ -16,16 +17,15 @@ import com.jogamp.opengl.glu.GLU;
 
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.Timer;
+
 import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-/**
- * COMMENT: Comment Game
- *
- * @author malcolmr
- */
-public class Game extends JFrame implements GLEventListener, MouseMotionListener, KeyListener {
-
+public class Game extends JFrame implements ActionListener, GLEventListener, MouseMotionListener, KeyListener {
+	private Timer timer;
+	private GL2 gl;
+	private int hour = 6;
 	private Terrain myTerrain;
 	private Avatar person;
 	private Camera camera;
@@ -41,6 +41,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	private boolean myModulate = true;
 	private boolean mySpecularSep = true;
 	private boolean mySoomth = true;
+	private Sun sun;
 
 	public enum Model {
 		Terrain, Tree, Leaves, Road, AvatarFur, AvatarFace
@@ -50,8 +51,24 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 	public Game(Terrain terrain) {
 		super("Assignment 2");
+
 		myTerrain = terrain;
 		camera = new Camera();
+
+		double[] centre = { terrain.size().getWidth(), 0, terrain.size().getHeight() };
+		sun = new Sun(centre);
+
+	}
+
+	public void updateSun() {
+		hour++;
+		hour %= 12;
+
+		setUpLighting(gl, (float) (hour / 12.0), .5f, .5f, (float) (hour / 12.0) * 10);
+		System.out.println("update sun at " + hour + ":00");
+		System.out.println(" Ambi " + (float) (hour / 12.0) + " shiness " + (float) (hour / 12.0) * 10);
+		sun.up();
+		sun.setIndex(hour);
 
 	}
 
@@ -94,6 +111,14 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		Terrain terrain = LevelIO.load(new File(args[0]));
 		Game game = new Game(terrain);
 		game.run();
+		Timer timer = new Timer(5000, game);
+
+		timer.start();
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+		}
+
 	}
 
 	@Override
@@ -102,14 +127,16 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		GL2 gl = drawable.getGL().getGL2();
 
 		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
+		gl.glClearColor((float) hour / 11, (float) hour / 11, (float) hour / 11, 1f);
 
-		// setUpLighting(gl);
+		setUpLighting(gl, .2f, .5f, .5f, 20f);
 
 		gl.glLoadIdentity();
-		camera.setCamera();
+		camera.setCamera(myTerrain);
 
 		float[] pos = myTerrain.getSunlight();
 		float[] lightpos = { pos[0], pos[1], pos[2], 0 };
+
 		gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, lightpos, 0);
 
 		// use the texture to modulate diffuse and ambient lighting
@@ -119,14 +146,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 			gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_REPLACE);
 		}
 
-		// gl.glColor3f(0, 0.5f, 0);
 		draw(gl);
-
-		GLUT glut = new GLUT();
-
-		glut.glutSolidSphere(1.0, 20, 20);
-		if (camera.isFollow())
-			person.drawAvatar(gl, glut);
 
 	}
 
@@ -139,7 +159,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	@Override
 	public void init(GLAutoDrawable drawable) {
 		GL2 gl = drawable.getGL().getGL2();
-
+		this.gl = gl;
 		gl.glClearColor(135 / 255f, 206 / 255f, 250 / 255f, 0.5f);
 
 		gl.glEnable(GL2.GL_DEPTH_TEST);
@@ -150,12 +170,9 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		gl.glEnable(GL2.GL_LIGHTING);
 		gl.glEnable(GL2.GL_LIGHT0);
 
-		setUpLighting(gl);
-
 		// Turn on OpenGL texturing.
 		gl.glEnable(GL2.GL_TEXTURE_2D);
 
-		// gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL2.GL_DONT_CARE);
 		gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL2.GL_NICEST);
 		// Load textures
 
@@ -163,6 +180,7 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		for (int i = 0; i < this.getNumTextures(); i++) {
 			myTextures[i] = new Texture(this, gl, "src/texture/" + this.getTexName(i), this.getTexExtension(i), true);
 		}
+		myTerrain.setMyTexture(myTextures[Model.Terrain.ordinal()]);
 		Texture face = myTextures[Model.AvatarFace.ordinal()];
 		Texture fur = myTextures[Model.AvatarFur.ordinal()];
 
@@ -170,9 +188,10 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		int centrez = (int) myTerrain.size().getWidth() / 2;
 		person = new Avatar(centrex, myTerrain.altitude(centrex, centrez), centrez, face, fur);
 		camera.setPerson(person);
+
 	}
 
-	public void setUpLighting(GL2 gl) {
+	public void setUpLighting(GL2 gl, float ambi, float diff, float spec, float shin) {
 
 		gl.glEnable(GL2.GL_LIGHTING);
 		// When you enable lighting you must still actually
@@ -180,12 +199,11 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 		// material parameter set for metallic gold or brass
 
-		float ambient[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-		float diffuse[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-		float specular[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-		float shininess = 50f;
+		float ambient[] = { ambi, ambi, ambi, 1.0f };
+		float diffuse[] = { diff, diff, diff, 1.0f };
+		float specular[] = { spec, spec, spec, 1.0f };
+		float shininess = shin;
 
-		// gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_TRUE);
 		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT, ambient, 0);
 		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_DIFFUSE, diffuse, 0);
 		gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SPECULAR, specular, 0);
@@ -194,7 +212,6 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		gl.glShadeModel(this.isSmooth() ? GL2.GL_SMOOTH : GL2.GL_FLAT);
 
 		if (this.isSpecular()) {
-
 			gl.glLightModeli(GL2.GL_LIGHT_MODEL_COLOR_CONTROL, GL2.GL_SEPARATE_SPECULAR_COLOR);
 		} else {
 			gl.glLightModeli(GL2.GL_LIGHT_MODEL_COLOR_CONTROL, GL2.GL_SINGLE_COLOR);
@@ -218,37 +235,18 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	}
 
 	private void draw(GL2 gl) {
-		// draw the Terrian
-		myModel = Model.Terrain;
+		GLUT glut = new GLUT();
+
+		gl.glDisable(GL2.GL_LIGHTING);
+		sun.drawSun(gl, glut);
+		gl.glEnable(GL2.GL_LIGHTING);
+
+
 		// Turn on OpenGL texturing.
-		gl.glEnable(GL2.GL_TEXTURE_2D);
 		// bind the texture
 		gl.glBindTexture(GL.GL_TEXTURE_2D, myTextures[getTexId()].getTextureId());
 
-		double[][][] verties = this.myTerrain.vertex_mesh();
-		gl.glBegin(GL2.GL_TRIANGLES);
-		{
-			for (int i = 0; i < verties.length; i++) {
-				double[] normal = verties[i][3];
-				normal[0] *= 100;
-//				System.out.println(normal[0] + " " + normal[1] + " " + normal[2]);
-
-				gl.glNormal3dv(normal, 0);
-
-				for (int j = 0; j < 3; j++) {
-					double[] vertex = verties[i][j];
-					// myTextures[getTexId()].draw(gl, j);
-
-					double[] textCoord = { 0, 0, 1, 0, 1, 1 };
-
-					gl.glTexCoord2d(textCoord[j * 2], textCoord[j * 2 + 1]);
-					gl.glVertex3d(vertex[0], vertex[1], vertex[2]);
-					// gl.glVertex3dv(vertex, 0);
-				}
-			}
-		}
-		gl.glEnd();
-
+		myTerrain.draw(gl);
 		// draw trees
 		List<Tree> trees = myTerrain.trees();
 		for (Tree t : trees) {
@@ -260,8 +258,13 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 		List<Road> roads = myTerrain.roads();
 		for (Road r : roads) {
 			r.setTextures(myTextures[Model.Road.ordinal()]);
-			r.drawRoad(gl);
+			// int counter = 0;
+			// r.drawRoad(gl, counter);
+			r.draw(gl);
 		}
+
+		if (camera.isFollow())
+			person.drawAvatar(gl, glut);
 
 	}
 
@@ -273,72 +276,81 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-
+		double h = 0;
 		double[] pos = person.getMyPos();
-		// TODO Auto-generated method stub
 		switch (e.getKeyCode()) {
 		case KeyEvent.VK_W:
-			if (pos[2] > 1) {
-				pos[2] -= .5;
-				pos[1] = myTerrain.altitude(pos[0], pos[2]);
-				person.setMyPos(pos);
+			if (camera.isFollow()) {
+				h = myTerrain.altitude(pos[0], pos[2]);
+				camera.up(h);
 			}
 			break;
 		case KeyEvent.VK_S:
-			if (pos[2] < myTerrain.size().getWidth() - 1) {
-				pos[2] += .5;
-				pos[1] = myTerrain.altitude(pos[0], pos[2]);
-				person.setMyPos(pos);
+			if (camera.isFollow()) {
+				h = myTerrain.altitude(pos[0], pos[2]);
+				camera.down(h);
 			}
 			break;
 		case KeyEvent.VK_A:
-			if (pos[0] > 1) {
-				pos[0] -= .5;
-				pos[1] = myTerrain.altitude(pos[0], pos[2]);
-				person.setMyPos(pos);
+			if (camera.isFollow()) {
+				h = myTerrain.altitude(pos[0], pos[2]);
+				camera.left(h);
 			}
 			break;
 		case KeyEvent.VK_D:
-			if (pos[0] < myTerrain.size().getHeight() - 1) {
-				pos[0] += .5;
-				pos[1] = myTerrain.altitude(pos[0], pos[2]);
-				person.setMyPos(pos);
-			}
-			break;
-		case KeyEvent.VK_Q:
 			if (camera.isFollow()) {
-				camera.leftAngleAroundPerson();
-			}
-
-			break;
-		case KeyEvent.VK_E:
-			if (camera.isFollow()) {
-				camera.rightAngleAroundPerson();
+				h = myTerrain.altitude(pos[0], pos[2]);
+				camera.right(h);
 			}
 			break;
+		case KeyEvent.VK_U:
+			sun.up();
+			break;
+		// case KeyEvent.VK_Q:
+		// if (camera.isFollow()) {
+		// camera.leftAngleAroundPerson();
+		// }
+		// break;
+		// case KeyEvent.VK_E:
+		// if (camera.isFollow()) {
+		// camera.rightAngleAroundPerson();
+		// }
+		// break;
 		case KeyEvent.VK_SPACE:
 			camera.setFollow();
 			break;
 		case KeyEvent.VK_UP:
-			if (!camera.isFollow())
-				camera.up();
+			if (!camera.isFollow()) {
+				if (pos[2] < myTerrain.size().getWidth() - 1)
+					h = myTerrain.altitude(pos[0], pos[2]);
+				camera.up(h);
+			}
 			break;
 		case KeyEvent.VK_DOWN:
-			if (!camera.isFollow())
-				camera.down();
+			if (!camera.isFollow()) {
+				if (pos[2] < myTerrain.size().getWidth() - 1)
+					h = myTerrain.altitude(pos[0], pos[2]);
+				camera.down(h);
+			}
 			break;
 		case KeyEvent.VK_RIGHT:
-			if (!camera.isFollow())
-				camera.right();
+			if (!camera.isFollow()) {
+				camera.right(h);
+			}
+
 			break;
 		case KeyEvent.VK_LEFT:
-			if (!camera.isFollow())
-				camera.left();
+			if (!camera.isFollow()) {
+				camera.left(h);
+			}
 			break;
+		case KeyEvent.VK_C:
+			if (e.isControlDown()) {
+				System.exit(EXIT_ON_CLOSE);
+			}
 		default:
 			break;
 		}
-		System.out.println(camera.getAngle());
 
 	}
 
@@ -391,5 +403,11 @@ public class Game extends JFrame implements GLEventListener, MouseMotionListener
 	public void mouseMoved(MouseEvent e) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		updateSun();
 	}
 }

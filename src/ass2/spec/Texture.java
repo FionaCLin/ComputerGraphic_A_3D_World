@@ -32,7 +32,6 @@ public class Texture {
 		mipMapEnabled = mipmaps;
 		TextureData data = null;
 		try {
-			System.out.println(fileName + "<<<<<<<<");
 			File file = new File(fileName);
 			BufferedImage img = ImageIO.read(file); // read file into
 													// BufferedImage
@@ -113,44 +112,4 @@ public class Texture {
 			gl.glDeleteTextures(1, textureID, 0);
 		}
 	}
-
-	public void draw(GL2 gl,int j) {
-		
-
-		switch (myModel.getModel()) {
-
-		case Terrain:
-
-			double[] textCoord = { 0, 0, 1, 0, 1, 1 };
-
-			gl.glTexCoord2d(textCoord[j * 2], textCoord[j * 2 + 1]);
-
-			break;
-
-		// case Tree:
-		// GLU glu = new GLU();
-		// // the built in glut sphere does not have texture coordinates set
-		// //glut.glutSolidSphere(1, 20, 20);
-		// GLUquadric quadric = glu.gluNewQuadric();
-		// glu.gluQuadricTexture(quadric, true);
-		// glu.gluQuadricNormals(quadric, GLU.GLU_SMOOTH);
-		// glu.gluSphere(quadric, 1, 64, 64);
-		//
-		// break;
-
-		// case TORUS:
-		// // the built in glut torus does not have texture coordinates set
-		// glut.glutSolidTorus(0.5, 1.5, 20, 20);
-		//
-		// break;
-		//
-		// case Avatar:
-		//
-		// gl.glPushMatrix();
-		//
-		// gl.glPopMatrix();
-		}
-
-	}
-
 }
